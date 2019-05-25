@@ -1,4 +1,4 @@
-# CSYE 6225 - Spring 2019
+# CSYE 6225 - Summer 2019
 
 ## Team Information
 
