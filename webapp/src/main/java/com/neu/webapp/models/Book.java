@@ -18,15 +18,16 @@ public class Book {
     private UUID id;
 
     private String title;
-
+    private String author;
     private String isbn;
 
     private Integer quantity ;
 
 
-    public Book( String title, String isbn, Integer quantity) {
+    public Book( String title, String isbn,String author , Integer quantity) {
 
         this.title = title;
+        this.author = author;
         this.isbn = isbn;
         this.quantity = quantity;
     }
