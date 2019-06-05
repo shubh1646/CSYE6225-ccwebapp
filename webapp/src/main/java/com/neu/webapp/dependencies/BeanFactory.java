@@ -20,17 +20,17 @@ public class BeanFactory {
     }
 
     @Bean
+    public UserValidator userValidator(){
+        return new UserValidator();
+    }
+
+    @Bean
     public BasicAuthenticationEntryPoint authenticationEntryPoint() {
         return new BasicAuthenticationEntryPoint() {
             @Override
             public void afterPropertiesSet() throws Exception {
                 setRealmName("webapp");
                 super.afterPropertiesSet();
-            }
-
-            @Bean
-            public UserValidator userValidator(){
-                return new UserValidator();
             }
 
             @Override
