@@ -1,5 +1,6 @@
 package com.neu.webapp.dependencies;
 
+import com.neu.webapp.validators.UserValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.AuthenticationException;
@@ -25,6 +26,11 @@ public class BeanFactory {
             public void afterPropertiesSet() throws Exception {
                 setRealmName("webapp");
                 super.afterPropertiesSet();
+            }
+
+            @Bean
+            public UserValidator userValidator(){
+                return new UserValidator();
             }
 
             @Override
