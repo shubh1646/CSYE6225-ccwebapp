@@ -43,4 +43,5 @@ public class UserValidator implements Validator {
         RuleResult result = validator.validate(new PasswordData(user.getPassword()));
         if(!result.isValid()) errors.rejectValue("password", "Password must contain 1 Uppercase and 1 Lowercase and 1 Special and 1 Digit Character and WhiteSpaces");
     }
+
 }
