@@ -6,13 +6,14 @@ import com.neu.webapp.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 import java.util.UUID;
 
+
+
+
 @Service
 public class BookService {
-
 
     @Autowired
     private BookRepository bookRepository;
@@ -38,31 +39,42 @@ public class BookService {
 
 
         //check for fields that need to be updated
-        if(book.getAuthor() != null)
-        {
+        if (book.getAuthor() != null) {
             upBook.setAuthor(book.getAuthor());
         }
 
-        if(book.getIsbn() != null)
-        {
+        if (book.getIsbn() != null) {
             upBook.setIsbn(book.getIsbn());
         }
 
-        if(book.getTitle() != null)
-        {
+        if (book.getTitle() != null) {
             upBook.setTitle(book.getTitle());
 
         }
 
-        if(book.getQuantity() != null)
-        {
+        if (book.getQuantity() != null) {
             upBook.setQuantity(book.getQuantity());
         }
 
         bookRepository.save(upBook);
 
 
+    }
 
+
+    public Book getById(UUID id)
+        {
+        Book book;
+        try{
+            book = bookRepository.findById(id).get();
+        }catch(Exception exc) {
+            book = null;
+        }
+        return book;
+    }
+
+    public void deleteById(UUID id){
+        bookRepository.deleteById(id);
 
     }
 }

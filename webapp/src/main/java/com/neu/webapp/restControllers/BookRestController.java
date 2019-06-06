@@ -6,11 +6,9 @@ import com.neu.webapp.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 public class BookRestController {
@@ -36,9 +34,8 @@ public class BookRestController {
     }
 
 
-  //PUT request to update all the books
+    //PUT request to update all the books
     @PutMapping("/book")
-
     public ResponseEntity updateBooks(@RequestBody Book book) {
 
         //check id in json incomming payload
@@ -51,5 +48,30 @@ public class BookRestController {
         return new ResponseEntity(HttpStatus.ACCEPTED);     /// return return code according to the condition (custpm )
     }
 
+
+
+    @GetMapping("/book/{id}")
+    public ResponseEntity<?> getBookPerId( @PathVariable UUID id) {
+        if(bookService.getById(id) != null){
+
+            Book book = bookService.getById(id);
+            return ResponseEntity.status(HttpStatus.OK).body(book);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found");
+        }
+
+    }
+
+    @DeleteMapping("/book/{id}")
+    public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) {
+        if (bookService.getById(id) != null) {
+            bookService.deleteById(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("This is Deleted");
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bad Request");
+        }
+    }
 
 }
