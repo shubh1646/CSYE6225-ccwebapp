@@ -23,7 +23,14 @@ public class Book {
 
     private Short quantity;
 
-    private Book(){
+    public Book() {
+    }
 
+    public Book(String title, String isbn, String author, Short quantity) {
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.quantity = quantity;
     }
 }
+
