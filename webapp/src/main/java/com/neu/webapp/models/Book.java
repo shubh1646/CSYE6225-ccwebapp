@@ -26,23 +26,4 @@ public class Book {
     private Book(){
 
     }
-//
-//    public Book(UUID id, @NotBlank String title, @NotBlank String author, @NotBlank String isbn, @NotBlank String quantity) {
-//        this.id = id;
-//        this.title = title;
-//        this.author = author;
-//        this.isbn = isbn;
-//        this.quantity = quantity;
-//    }
-
-//    @Override
-//    public String toString() {
-//        return "Book{" +
-//                "id=" + id +
-//                ", title='" + title + '\'' +
-//                ", author='" + author + '\'' +
-//                ", isbn='" + isbn + '\'' +
-//                ", quantity='" + quantity + '\'' +
-//                '}';
-//    }
 }
