@@ -4,7 +4,7 @@
 
 | Name | NEU ID | Email Address |
 | --- | --- | --- |
-| | | |
+| shubham sharma| 001447366 | sharma.shubh@husky.neu.edu|
 | | | |
 | | | |
 | | | |
