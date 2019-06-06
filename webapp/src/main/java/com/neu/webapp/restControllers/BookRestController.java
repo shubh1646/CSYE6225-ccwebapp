@@ -4,6 +4,8 @@ package com.neu.webapp.restControllers;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,8 +21,8 @@ public class BookRestController {
 
     // "Post request to create books ";
     @PostMapping("/book")
-    public void createBooks(@RequestBody Book book) {
-        bookService.CreateBook(book);
+    public Book createBooks(@RequestBody Book book) {
+        return bookService.CreateBook(book);
 
     }
 
@@ -37,9 +39,16 @@ public class BookRestController {
   //PUT request to update all the books
     @PutMapping("/book")
 
-    public Book updateBooks(@RequestBody Book book) {
+    public ResponseEntity updateBooks(@RequestBody Book book) {
+
+
+        if(book.getId() == null || book == null )
+        {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+
         bookService.UpdateBook(book);
-       return book;
+        return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
 
