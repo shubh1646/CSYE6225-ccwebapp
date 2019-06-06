@@ -18,17 +18,13 @@ public class BookService {
     }
 
     public Book getById(UUID id){
-        Book book = bookRepository.findById(id).get();
+        Book book;
+        try{
+            book = bookRepository.findById(id).get();
+        }catch(Exception exc) {
+            book = null;
+        }
         return book;
-    }
-
-    public Boolean findById(UUID id){
-        if(bookRepository.findById(id).isPresent()) {
-            return true;
-        }
-        else{
-            return false;
-        }
     }
 
     public void deleteById(UUID id){
