@@ -33,8 +33,11 @@ public class BookService {
 
 
     public void UpdateBook(Book book) {
-
+        // get the book that need to be updated
         Book upBook = bookRepository.findById(book.getId()).get();
+
+
+        //check for fields that need to be updated
         if(book.getAuthor() != null)
         {
             upBook.setAuthor(book.getAuthor());
