@@ -34,7 +34,7 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
-    @RequestMapping(value = "/user/register", method = RequestMethod.POST)
+    @PostMapping("/user/register")
     public User register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
         if(errors.hasErrors()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

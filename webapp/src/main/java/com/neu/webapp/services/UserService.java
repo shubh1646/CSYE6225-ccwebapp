@@ -19,7 +19,6 @@ public class UserService implements UserDetailsService {
     private BCryptPasswordEncoder pwdEncoder;
 
     public void register(User user) {
-//        user.setHashedPassword(pwdEncoder.encode(user.getPassword()));
         user.setPassword(pwdEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
