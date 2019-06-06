@@ -1,5 +1,6 @@
 package com.neu.webapp.services;
 
+import com.neu.webapp.models.Book;
 import com.neu.webapp.models.CustomUserDetails;
 import com.neu.webapp.models.User;
 import com.neu.webapp.repositories.UserRepository;
@@ -29,4 +30,5 @@ public class UserService implements UserDetailsService {
         if(user==null) throw new UsernameNotFoundException("User with given emailId does not exist");
         else return new CustomUserDetails(user);
     }
+
 }

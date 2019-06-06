@@ -4,6 +4,8 @@ import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -34,15 +36,25 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
+//    @PostMapping("/user/register")
+//    public User register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+//        if(errors.hasErrors()) {
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//            return null;
+//        }else {
+//            response.setStatus(HttpServletResponse.SC_CREATED);
+//            userService.register(user);
+//            return user;
+//        }
+//    }
+
     @PostMapping("/user/register")
-    public User register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
         if(errors.hasErrors()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return null;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }else {
-            response.setStatus(HttpServletResponse.SC_CREATED);
             userService.register(user);
-            return user;
+            return ResponseEntity.status(HttpStatus.CREATED).body(user);
         }
     }
 }
