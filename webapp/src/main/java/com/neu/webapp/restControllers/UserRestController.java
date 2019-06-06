@@ -25,28 +25,18 @@ public class UserRestController {
     private UserValidator userValidator;
 
     @GetMapping("/")
-    public String welcome(HttpServletRequest request){
+    public ResponseEntity<?> welcome(HttpServletRequest request){
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        return "Welcome "+request.getRemoteUser()+", current time: "+sdf.format(cal.getTime());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                "Welcome "+request.getRemoteUser()+", current time: "+sdf.format(cal.getTime())
+        );
     }
 
     @InitBinder
     private void initBinder(WebDataBinder binder) {
         binder.setValidator(userValidator);
     }
-
-//    @PostMapping("/user/register")
-//    public User register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
-//        if(errors.hasErrors()) {
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            return null;
-//        }else {
-//            response.setStatus(HttpServletResponse.SC_CREATED);
-//            userService.register(user);
-//            return user;
-//        }
-//    }
 
     @PostMapping("/user/register")
     public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
