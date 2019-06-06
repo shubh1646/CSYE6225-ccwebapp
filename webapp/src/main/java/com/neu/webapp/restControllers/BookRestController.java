@@ -46,10 +46,4 @@ public class BookRestController {
         }
     }
 
-    @RequestMapping(value = "/book", method = RequestMethod.POST)
-    public Book create(@Valid @RequestBody Book book) {
-        bookService.create(book);
-        return book;
-    }
-
 }
