@@ -16,16 +16,12 @@ public class Book {
     @Column(name = "book_id", columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(name = "TITLE")
     private String title;
 
-    @Column(name = "AUTHOR")
     private String author;
 
-    @Column(name = "ISBN")
     private String isbn;
 
-    @Column(name = "QUANTITY")
     private String quantity;
 
     private Book(){
