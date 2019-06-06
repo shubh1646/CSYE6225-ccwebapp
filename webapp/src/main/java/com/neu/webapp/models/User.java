@@ -18,4 +18,12 @@ public class User {
     private String emailId;
 
     private String password;
+
+    public User() {}
+
+    public User(UUID id, String emailId, String password) {
+        this.id = id;
+        this.emailId = emailId;
+        this.password = password;
+    }
 }

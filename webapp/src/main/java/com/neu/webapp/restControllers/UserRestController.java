@@ -4,6 +4,8 @@ import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +25,12 @@ public class UserRestController {
     private UserValidator userValidator;
 
     @GetMapping("/")
-    public String welcome(HttpServletRequest request){
+    public ResponseEntity<?> welcome(HttpServletRequest request){
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        return "Welcome "+request.getRemoteUser()+", current time: "+sdf.format(cal.getTime());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                "Welcome "+request.getRemoteUser()+", current time: "+sdf.format(cal.getTime())
+        );
     }
 
     @InitBinder
@@ -34,16 +38,13 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
-    @RequestMapping(value = "/user/register", method = RequestMethod.POST)
-    public User register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
-
+    @PostMapping("/user/register")
+    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
         if(errors.hasErrors()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return null;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }else {
-            response.setStatus(HttpServletResponse.SC_CREATED);
             userService.register(user);
-            return user;
+            return ResponseEntity.status(HttpStatus.CREATED).body(user);
         }
     }
 }
