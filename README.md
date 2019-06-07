@@ -138,7 +138,7 @@ Note: -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' mig
 	    "isbn": "978-0132126954",
 	    "quantity": 10
 	}'
-	Response: 
+	Response: Blank with 204 No Content Status Code
 
 ## Running Tests
 Used mockito and junit for test case.
