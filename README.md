@@ -139,6 +139,21 @@ Note: -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' mig
 	    "quantity": 10
 	}'
 	Response: Blank with 204 No Content Status Code
+	
+	Get all books:
+	curl -X GET \
+	  http://localhost:8080/book \
+	  -H 'Accept: */*' \
+	  -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' \
+	  -H 'Cache-Control: no-cache' \
+	  -H 'Connection: keep-alive' \
+	  -H 'Content-Type: application/json' \
+	  -H 'Host: localhost:8080' \
+	  -H 'Postman-Token: e5377569-135b-4772-bc0f-f03d8e2d4b30,fc190521-b4f5-40fc-a866-d145d6cb61fd' \
+	  -H 'User-Agent: PostmanRuntime/7.13.0' \
+	  -H 'accept-encoding: gzip, deflate' \
+	  -H 'cache-control: no-cache'
+	  Response: Retrieves all books in the database
 
 ## Running Tests
 Used mockito and junit for test case.
