@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | shubham sharma| 001447366 | sharma.shubh@husky.neu.edu|
 | Cyril Sebestian | 001448384 | sebastian.c@huky.neu.edu |
-| Mansi Gandhi | 001448384 | gandhi.man@husky.neu.edu |
+| Mansi Gandhi | 001494387 | gandhi.man@husky.neu.edu |
 
 ## Technology Stack
 This web application is developed using spring boot and uses rest controller for achieving any use case. 
