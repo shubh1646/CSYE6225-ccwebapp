@@ -18,6 +18,7 @@ Pre-Requisites: Need to have postman installed
 3. Download all maven dependencies by going to File > Settings > Maven > Importing. 
 4. Run WebappApplication by going to csye6225/dev/ccwebapp/webapp/src/main/java/com/neu/webapp/WebappApplication.java
 
+Note: -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' might have to tweak based on the credentials.
 ## Deploy Instructions
 	Register an User: 
 	curl -X POST \
@@ -126,7 +127,7 @@ Pre-Requisites: Need to have postman installed
 	Update a book:
 	curl -X PUT \
 	  http://localhost:8080/book \
-	  -H 'Authorization: Basic Y3lyaWwxODExc2ViYXN0aWFuQGdtYWlsLmNvbTpQQCQkVzByZDEyMw==' \
+	  -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' \
 	  -H 'Content-Type: application/json' \
 	  -H 'Postman-Token: ed850f17-8b8f-4f6a-96f5-691801127529' \
 	  -H 'cache-control: no-cache' \
