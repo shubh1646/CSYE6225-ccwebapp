@@ -56,8 +56,7 @@ public class BookRestController {
     @PutMapping("/book")
     public ResponseEntity updateBooks(@RequestBody Book book) {
         //check id in json incomming payload
-        if(book.getId() == null || book == null )
-        {
+        if(book.getId() == null || book == null ) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
 
