@@ -35,7 +35,7 @@ public class UserRestControllerTest {
     }
 
     @Test
-    public void welcome() throws Exception{
+    public void welcomeTest() throws Exception{
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
