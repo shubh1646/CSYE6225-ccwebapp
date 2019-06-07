@@ -26,7 +26,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public boolean isEmailPresent(String emailId) {
+    public Boolean isEmailPresent(String emailId) {
         return userRepository.isEmailPresent(emailId) > 0 ? true : false;
     }
 
