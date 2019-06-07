@@ -1,5 +1,6 @@
 package com.neu.webapp.restControllers;
 
+import com.neu.webapp.errors.RegistrationStatus;
 import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
@@ -25,11 +26,11 @@ public class UserRestController {
     private UserValidator userValidator;
 
     @GetMapping("/")
-    public ResponseEntity<?> welcome(HttpServletRequest request){
+    public ResponseEntity<String> welcome(HttpServletRequest request){
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         return ResponseEntity.status(HttpStatus.OK).body(
-                "Welcome "+request.getRemoteUser()+", current time: "+sdf.format(cal.getTime())
+                "Welcome  current time: "+sdf.format(cal.getTime())
         );
     }
 
@@ -39,12 +40,16 @@ public class UserRestController {
     }
 
     @PostMapping("/user/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+        RegistrationStatus registrationStatus;
+
         if(errors.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            registrationStatus = userService.getErrorStatus(errors);
+            return new ResponseEntity(registrationStatus, HttpStatus.BAD_REQUEST);
         }else {
+            registrationStatus = new RegistrationStatus();
             userService.register(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            return new ResponseEntity(registrationStatus, HttpStatus.CREATED);
         }
     }
 }
