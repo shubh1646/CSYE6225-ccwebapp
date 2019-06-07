@@ -141,5 +141,6 @@ Pre-Requisites: Need to have postman installed
 
 ## Running Tests
 Used mockito and junit for test case.
+Run WebappApplication test cases: open the webapp aplication on your IDE -> right click on webapp -> Run 'All Tests'
 
 ## CI/CD
