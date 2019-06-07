@@ -45,4 +45,5 @@ public class UserValidator implements Validator {
         if(userService.isEmailPresent(user.getEmailId())) errors.rejectValue("emailId", "account already exists");
 
     }
+
 }
