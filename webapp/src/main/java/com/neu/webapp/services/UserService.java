@@ -30,7 +30,7 @@ public class UserService implements UserDetailsService {
         return userRepository.isEmailPresent(emailId) > 0 ? true : false;
     }
 
-    public RegistrationStatus getErrorStatus(BindingResult errors) {
+    public RegistrationStatus getRegistrationStatus(BindingResult errors) {
         FieldError emailIdError = errors.getFieldError("emailId");
         FieldError passwordError = errors.getFieldError("password");
         String emailIdErrorMessage = emailIdError == null ? "-" : emailIdError.getCode();

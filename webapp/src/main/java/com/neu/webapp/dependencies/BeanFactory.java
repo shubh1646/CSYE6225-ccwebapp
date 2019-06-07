@@ -1,5 +1,6 @@
 package com.neu.webapp.dependencies;
 
+import com.neu.webapp.validators.BookValidator;
 import com.neu.webapp.validators.UserValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,11 @@ public class BeanFactory {
     @Bean
     public UserValidator userValidator(){
         return new UserValidator();
+    }
+
+    @Bean
+    public BookValidator bookValidator(){
+        return new BookValidator();
     }
 
     @Bean

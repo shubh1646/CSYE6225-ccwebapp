@@ -18,6 +18,4 @@ public class RegistrationStatus {
         this.emailIdError = emailIdError;
         this.passwordError = passwordError;
     }
-
-
 }
