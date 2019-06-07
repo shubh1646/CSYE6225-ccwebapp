@@ -18,7 +18,7 @@ public class BookRestController {
 
     // "Post request to create books ";
     @PostMapping("/book")
-    public Book createBooks(@RequestBody Book book) {
+    public ResponseEntity createBooks(@RequestBody Book book) {
         return bookService.CreateBook(book);
 
     }

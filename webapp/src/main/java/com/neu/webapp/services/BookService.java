@@ -4,6 +4,7 @@ package com.neu.webapp.services;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
@@ -23,10 +24,19 @@ public class BookService {
     }
 
 
-    public Book CreateBook(Book book)
-    {
-        Book b = bookRepository.save(book);
-            return book;
+
+
+
+    public ResponseEntity CreateBook(Book book) {
+
+        if (book.getQuantity() == null || book.getAuthor() == null || book.getTitle() == null || book.getIsbn() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error in incomming Json payload");
+
+        } else {
+            Book b = bookRepository.save(book);
+            return ResponseEntity.status(HttpStatus.CREATED).body(book);
+        }
+
     }
 
 
