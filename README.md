@@ -22,7 +22,7 @@ Pre-Requisites: Need to have postman installed
 	Register an User: 
 	POST: localhost:8080/user/register
 	Auth: No Auth 
-	Body: <br/>
+	Body: 
 	{
 		"emailId" : "mansigandhi@gmail.com",
 		"password" : "Mansi@123"
