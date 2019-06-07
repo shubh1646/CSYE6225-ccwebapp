@@ -31,17 +31,18 @@ public class BookRestController {
 
     // "Post request to create books ";
     @PostMapping("/book")
+
+
     public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) {
         BookAdditionStatus bookAdditionStatus;
-        if(errors.hasErrors()) {
+        if (errors.hasErrors()) {
             bookAdditionStatus = bookService.getStockingStatus(errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bookAdditionStatus);
-        }else {
+        } else {
             return ResponseEntity.status(HttpStatus.CREATED).body(bookService.CreateBook(book));
         }
+
     }
-
-
     //   "get request to return all the books ";
     @GetMapping("/book")
     public Iterable<Book> getAllBooks() {
