@@ -1,5 +1,6 @@
 package com.neu.webapp.dependencies;
 
+import com.neu.webapp.validators.BookValidator;
 import com.neu.webapp.validators.UserValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,11 @@ public class BeanFactory {
     }
 
     @Bean
+    public BookValidator bookValidator(){
+        return new BookValidator();
+    }
+
+    @Bean
     public BasicAuthenticationEntryPoint authenticationEntryPoint() {
         return new BasicAuthenticationEntryPoint() {
             @Override
@@ -37,7 +43,7 @@ public class BeanFactory {
             public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                 response.addHeader("WWW-Authenticate", "Basic realm = "+getRealmName());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().println("401 - UNAUTHORIZED");
+                response.getWriter().println("You are not logged in");
             }
         };
     }

@@ -1,5 +1,6 @@
 package com.neu.webapp.restControllers;
 
+import com.neu.webapp.errors.RegistrationStatus;
 import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
@@ -24,27 +25,31 @@ public class UserRestController {
     @Autowired
     private UserValidator userValidator;
 
-    @GetMapping("/")
-    public ResponseEntity<?> welcome(HttpServletRequest request){
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        return ResponseEntity.status(HttpStatus.OK).body(
-                "Welcome "+request.getRemoteUser()+", current time: "+sdf.format(cal.getTime())
-        );
-    }
-
     @InitBinder
     private void initBinder(WebDataBinder binder) {
         binder.setValidator(userValidator);
     }
 
+    @GetMapping("/")
+    public ResponseEntity<String> welcome(HttpServletRequest request){
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        return ResponseEntity.status(HttpStatus.OK).body(
+                "Welcome  current time: "+sdf.format(cal.getTime())
+        );
+    }
+
     @PostMapping("/user/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+        RegistrationStatus registrationStatus;
+
         if(errors.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            registrationStatus = userService.getRegistrationStatus(errors);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(registrationStatus);
         }else {
+            registrationStatus = new RegistrationStatus();
             userService.register(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(registrationStatus);
         }
     }
 }
