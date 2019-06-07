@@ -122,6 +122,22 @@ Pre-Requisites: Need to have postman installed
 	  -H 'cache-control: no-cache' \
 	  -H 'content-length: '
 	Response: Blank with 204 No Content Status Code
+	
+	Update a book:
+	curl -X PUT \
+	  http://localhost:8080/book \
+	  -H 'Authorization: Basic Y3lyaWwxODExc2ViYXN0aWFuQGdtYWlsLmNvbTpQQCQkVzByZDEyMw==' \
+	  -H 'Content-Type: application/json' \
+	  -H 'Postman-Token: ed850f17-8b8f-4f6a-96f5-691801127529' \
+	  -H 'cache-control: no-cache' \
+	  -d '{
+	    "id": "c51de37e-c380-4fb4-996a-50c9c826bc8e",
+	    "title": "Java Basics",
+	    "author": "Mark Munson",
+	    "isbn": "978-0132126954",
+	    "quantity": 10
+	}'
+	Response: 
 
 ## Running Tests
 Used mockito and junit for test case.
