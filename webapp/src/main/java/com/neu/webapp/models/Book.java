@@ -23,6 +23,9 @@ public class Book {
 
     private Short quantity;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Cover image = null;
+
     public Book() {
     }
 

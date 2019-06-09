@@ -1,6 +1,5 @@
 package com.neu.webapp.restControllers;
 
-
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
@@ -16,6 +15,7 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/book")
 public class BookRestController {
 
     @Autowired
@@ -30,7 +30,7 @@ public class BookRestController {
     }
 
     // "Post request to create books ";
-    @PostMapping("/book")
+    @PostMapping
     public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) {
         BookAdditionStatus bookAdditionStatus;
         if(errors.hasErrors()) {
@@ -43,7 +43,7 @@ public class BookRestController {
 
 
     //   "get request to return all the books ";
-    @GetMapping("/book")
+    @GetMapping
     public Iterable<Book> getAllBooks() {
         Iterable<Book> allBooks = bookService.getAllBooks();
         return allBooks;
@@ -52,7 +52,7 @@ public class BookRestController {
 
 
     //PUT request to update all the books
-    @PutMapping("/book")
+    @PutMapping
     public ResponseEntity updateBooks(@RequestBody Book book) {
         //check id in json incomming payload
         if(book.getId() == null || book == null )
@@ -66,7 +66,7 @@ public class BookRestController {
 
 
 
-    @GetMapping("/book/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getBookPerId( @PathVariable UUID id) {
         if(bookService.getById(id) != null){
 
@@ -79,7 +79,7 @@ public class BookRestController {
 
     }
 
-    @DeleteMapping("/book/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) {
         if (bookService.getById(id) != null) {
             bookService.deleteById(id);
@@ -89,5 +89,4 @@ public class BookRestController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bad Request");
         }
     }
-
 }
