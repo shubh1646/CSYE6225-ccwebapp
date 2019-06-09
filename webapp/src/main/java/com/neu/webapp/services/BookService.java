@@ -4,6 +4,7 @@ import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -19,9 +20,13 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+
+
     public Book CreateBook(Book book) {
         Book b = bookRepository.save(book);
         return book;
+
+
     }
 
     public void UpdateBook(Book book) {

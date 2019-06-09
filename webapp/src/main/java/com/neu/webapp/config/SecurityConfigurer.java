@@ -36,7 +36,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests()
-                .antMatchers("/","/book","/book/*").fullyAuthenticated()
+                .antMatchers("/","/book","/book/*", "/book/**").fullyAuthenticated()
                 .anyRequest().permitAll();
     }
 }

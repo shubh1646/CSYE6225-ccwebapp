@@ -33,15 +33,14 @@ public class BookRestController {
     @PostMapping
     public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) {
         BookAdditionStatus bookAdditionStatus;
-        if(errors.hasErrors()) {
+        if (errors.hasErrors()) {
             bookAdditionStatus = bookService.getStockingStatus(errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bookAdditionStatus);
-        }else {
+        } else {
             return ResponseEntity.status(HttpStatus.CREATED).body(bookService.CreateBook(book));
         }
+
     }
-
-
     //   "get request to return all the books ";
     @GetMapping
     public Iterable<Book> getAllBooks() {
@@ -55,8 +54,7 @@ public class BookRestController {
     @PutMapping
     public ResponseEntity updateBooks(@RequestBody Book book) {
         //check id in json incomming payload
-        if(book.getId() == null || book == null )
-        {
+        if(book.getId() == null || book == null ) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
 
