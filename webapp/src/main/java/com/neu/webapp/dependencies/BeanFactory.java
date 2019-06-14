@@ -43,7 +43,7 @@ public class BeanFactory {
             public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                 response.addHeader("WWW-Authenticate", "Basic realm = "+getRealmName());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().println("You are not logged in");
+                response.getWriter().println("{ \"error\": \"You are not logged in\" }");
             }
         };
     }

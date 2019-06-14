@@ -33,7 +33,7 @@ public class BookServiceTest {
     public  void getByIdTest(){
         //add the behavior of book service to get the id
         Mockito.when(bookRepositoryTest.findById(BOOK.getId())).thenReturn(Optional.of(BOOK));
-        Book book = bookServiceTest.getById(BOOK.getId());
+        Book book = bookServiceTest.getBookById(BOOK.getId());
         Assertions.assertThat(book).isEqualTo(BOOK);
    }
 

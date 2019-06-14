@@ -2,6 +2,7 @@ package com.neu.webapp.models;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -22,6 +23,9 @@ public class Book {
     private String isbn;
 
     private Short quantity;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Cover image = null;
 
     public Book() {
     }
