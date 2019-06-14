@@ -154,6 +154,55 @@ Note: -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' mig
 	  -H 'accept-encoding: gzip, deflate' \
 	  -H 'cache-control: no-cache'
 	  Response: Retrieves all books in the database
+	  
+	Get Cover Image of a given Book:
+	curl -X GET \
+	  http://localhost:8080/book/179d316f-6ca2-4317-9d66-94d1d3409fd1/image/75f83e7b-790e-4d83-a980-1d7316e7e705 \
+	  -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' \
+	  -H 'Content-Type: application/json' \
+	  -H 'Postman-Token: 543e5a1d-ca9a-4773-8ecb-2e2c088ec172' \
+	  -H 'cache-control: no-cache'
+	  Response:
+	{
+	    "id": "75f83e7b-790e-4d83-a980-1d7316e7e705",
+	    "url": "/home/cyrilsebastian/Desktop/BookCovers/179d316f-6ca2-4317-9d66-94d1d3409fd1-cover2.png"
+	}
+	
+	Add Cover Image for a given Book:
+	curl -X POST \
+	  http://localhost:8080/book/cfe6d387-acb3-40e2-8f95-1a77e37e32ba/image \
+	  -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' \
+	  -H 'Content-Type: application/json' \
+	  -H 'Postman-Token: d69f2a39-2ff9-4ef1-ae44-8cde7e3eb9de' \
+	  -H 'cache-control: no-cache' \
+	  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+	  -F image=@/home/cyrilsebastian/Desktop/cover2.png
+	  Response:
+	{
+	    "id": "07efa585-4460-4d03-a390-a6cc2910b843",
+	    "url": "/home/cyrilsebastian/Desktop/BookCoverImages/cfe6d387-acb3-40e2-8f95-1a77e37e32ba-cover2.png"
+	}
+	
+	Update Cover Image of a given Book:
+	curl -X PUT \
+	  http://localhost:8080/book/cfe6d387-acb3-40e2-8f95-1a77e37e32ba/image/07efa585-4460-4d03-a390-a6cc2910b843 \
+	  -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' \
+	  -H 'Content-Type: application/json' \
+	  -H 'Postman-Token: 1cce9d3f-8d4e-4cde-b94b-379187a27631' \
+	  -H 'cache-control: no-cache' \
+	  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+	  -F image=@/home/cyrilsebastian/Desktop/cover1.jpg
+	  Response: Blank with 204 No Content Status Code
+	  
+	Delete Cover Image of a given Book:
+	curl -X DELETE \
+	  http://localhost:8080/book/cfe6d387-acb3-40e2-8f95-1a77e37e32ba/image/07efa585-4460-4d03-a390-a6cc2910b843 \
+	  -H 'Authorization: Basic bWFuc2lnYW5kaGlAZ21haWwuY29tOk1hbnNpQDEyMw==' \
+	  -H 'Content-Type: application/json' \
+	  -H 'Postman-Token: d9132f37-020f-45d9-85c4-97befc14911b' \
+	  -H 'cache-control: no-cache' \
+	  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+	  Response: Blank with 204 No Content Status Code
 
 ## Running Tests
 Used mockito and junit for test case.
