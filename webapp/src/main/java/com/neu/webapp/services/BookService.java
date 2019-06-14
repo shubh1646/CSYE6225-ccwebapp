@@ -26,9 +26,13 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+
+
     public Book CreateBook(Book book) {
         Book b = bookRepository.save(book);
         return book;
+
+
     }
 
     public void UpdateBook(Book book) {
