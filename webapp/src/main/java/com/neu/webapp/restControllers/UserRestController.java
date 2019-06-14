@@ -31,11 +31,12 @@ public class UserRestController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<String> welcome(HttpServletRequest request){
+    public ResponseEntity<String> welcome(HttpServletRequest request) throws Exception{
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String message = "Welcome  current time: "+sdf.format(cal.getTime());
         return ResponseEntity.status(HttpStatus.OK).body(
-                "Welcome  current time: "+sdf.format(cal.getTime())
+                "{ \"message\": \""+message+"\" }"
         );
     }
 
