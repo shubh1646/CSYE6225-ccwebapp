@@ -60,4 +60,3 @@ else
     echo "Failed: failed to deploy the stack"
     echo $status
 fi
-
