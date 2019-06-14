@@ -1,20 +1,26 @@
 echo "Enter the stack name that need to be deleted"
 read stackName
 
-  
+aws cloudformation describe-stacks --stack-name $stackName &> /dev/null
 
-aws cloudformation  delete-stack --stack-name $stackName
+if [ $? -ne 0 ]
+then
+	echo "Failed: stack by this name does not exist"
+	exit
+fi
 
-echo "deleting.........."
-aws cloudformation wait stack-delete-complete  --stack-name $stackName
-
+status=$(aws cloudformation  delete-stack --stack-name $stackName)
 
 if [ $? -eq 0 ]
+then
+	echo "deleting.........."
+	aws cloudformation wait stack-delete-complete  --stack-name $stackName
+	if [ $? -eq 0 ]
 	then 
-	echo "Deletion sucess!"
-
+		echo "Deletion sucess!"
+	else
+		echo "delete command failure"
+	fi
 else
-
-echo "delete command failure"
-
-fi  
+	echo "delete command failure"
+fi
