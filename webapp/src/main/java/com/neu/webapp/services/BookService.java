@@ -2,17 +2,23 @@ package com.neu.webapp.services;
 
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
+import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class BookService {
+    @Autowired
+    private CoverService coverService;
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -42,13 +48,9 @@ public class BookService {
         bookRepository.save(upBook);
     }
 
-
-    public Book getById(UUID id) {
-        try{
-            return bookRepository.findById(id).get();
-        }catch(Exception exc) {
-            return null;
-        }
+    public Book getBookById(UUID id) {
+        Optional<Book> temp = bookRepository.findById(id);
+        return temp.isEmpty() ? null : temp.get();
     }
 
     public void deleteById(UUID id){
@@ -67,5 +69,17 @@ public class BookService {
         String quantityErrorMessage = quantityError == null ? "-" : quantityError.getCode();
 
         return new BookAdditionStatus(titleErrorMessage, authorErrorMessage, isbnErrorMessage, quantityErrorMessage);
+    }
+
+    public boolean isBookImagePresent(Book book) {
+        if(book.getImage() == null) return false;
+        return true;
+    }
+
+    public boolean addCoverToBook(MultipartFile image, Book book) throws Exception{
+        if(!coverService.isFileFormatRight(image.getContentType())) return false;
+        book.setImage(new Cover(coverService.writeFile(image, book.getId())));
+        bookRepository.save(book);
+        return true;
     }
 }
