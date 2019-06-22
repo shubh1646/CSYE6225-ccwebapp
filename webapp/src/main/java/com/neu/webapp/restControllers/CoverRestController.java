@@ -11,10 +11,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/book//{idBook}/image")
+@RequestMapping("/book/{idBook}/image")
 @Validated
 public class CoverRestController {
     @Autowired
@@ -35,7 +36,7 @@ public class CoverRestController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addCover(@PathVariable UUID idBook, @RequestParam(required = false) MultipartFile image) throws Exception{
+    public ResponseEntity<?> addCover(@PathVariable UUID idBook, @RequestParam(required = false) MultipartFile image, HttpServletRequest request) throws Exception{
         if(!coverService.isImagePresent(image)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Select a file\" }");
         if(!coverService.isFileFormatRight(image.getContentType())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Image File Format Wrong\" }");
 
@@ -43,13 +44,16 @@ public class CoverRestController {
         if(book == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Book_ID\" }");
         if(bookService.isBookImagePresent(book)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Cover exist already perform PUT to modify\" }");
 
-        Cover cover = coverService.addCover(book, image);
+
+        String path = request.getServletContext().getRealPath("/images/");
+
+        Cover cover = coverService.addCover(book, image, path);
 
         return ResponseEntity.status(HttpStatus.OK).body(cover);
     }
 
     @PutMapping("/{idImage}")
-    public ResponseEntity<?> updateCover(@PathVariable UUID idBook, @PathVariable UUID idImage, @RequestParam(required = false) MultipartFile image) throws Exception{
+    public ResponseEntity<?> updateCover(@PathVariable UUID idBook, @PathVariable UUID idImage, @RequestParam(required = false) MultipartFile image, HttpServletRequest request) throws Exception{
         if(!coverService.isImagePresent(image)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Select a file\" }");
         if(!coverService.isFileFormatRight(image.getContentType())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Image File Format Wrong\" }");
 
@@ -59,7 +63,10 @@ public class CoverRestController {
 
         Cover cover = coverService.getCoverById(idImage);
         if(cover == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Image_ID\" }");
-        coverService.updateCover(book, cover, image);
+
+        String path = request.getServletContext().getRealPath("/images/");
+
+        coverService.updateCover(book, cover, image, path);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(cover);
     }

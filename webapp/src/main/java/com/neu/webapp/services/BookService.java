@@ -76,10 +76,10 @@ public class BookService {
         return true;
     }
 
-    public boolean addCoverToBook(MultipartFile image, Book book) throws Exception{
-        if(!coverService.isFileFormatRight(image.getContentType())) return false;
-        book.setImage(new Cover(coverService.writeFile(image, book.getId())));
-        bookRepository.save(book);
-        return true;
-    }
+//    public boolean addCoverToBook(MultipartFile image, Book book) throws Exception{
+//        if(!coverService.isFileFormatRight(image.getContentType())) return false;
+//        book.setImage(new Cover(coverService.writeFile(image, book.getId())));
+//        bookRepository.save(book);
+//        return true;
+//    }
 }
