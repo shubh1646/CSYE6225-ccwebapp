@@ -3,6 +3,37 @@
     "Description" : "AWS CloudFormation Template for a Networking stack with 1-VPC, 3-Subnets, 1-IGW, 1-RT",
     "Parameters":
     {
+       "vpcName":
+       {
+         "Type": "String",
+         "AllowedPattern": "^[a-zA-Z0-9]*$",
+         "Description": "user specified VPC name"
+       },
+       "igwName":
+       {
+         "Type": "String",
+         "Description": "Ineternet Gateway Name"
+       },
+       "subnet1Name":
+       {
+         "Type": "String",
+         "Description": "Subnet-1 Name"
+       },
+       "subnet2Name":
+       {
+         "Type": "String",
+         "Description": "Subnet-2 Name"
+       },
+       "subnet3Name":
+       {
+         "Type": "String",
+         "Description": "Subnet-3 Name"
+       },
+       "routeTableName":
+       {
+         "Type": "String",
+         "Description": "Route Table name"
+       },
        "vpcCidrBlock":
        {
           "Type": "String",
@@ -20,15 +51,15 @@
     },
     "Resources":
     {
-       "myIGW":
+       "igwId":
        {
           "Type" : "AWS::EC2::InternetGateway",
           "Properties" :
           {
-                "Tags" : [ { "Key" : "myIGW", "Value" : "Internet GateWay of Stack" } ]
+                "Tags" : [ { "Key" : "Name", "Value" : {"Ref": "igwName"} } ]
           }             
        },
-       "myVPC" : 
+       "vpcId" : 
        {
           "Type" : "AWS::EC2::VPC",
           "Properties" :
@@ -37,24 +68,24 @@
              "EnableDnsSupport" : "true",
              "EnableDnsHostnames" : "true",
              "InstanceTenancy" : "default",
-             "Tags" : [ {"Key" : "myVPC", "Value" : "Stack VPC with NetworkIP: 10.0.0.0/16" } ]
+             "Tags" : [ {"Key" : "Name", "Value" : { "Ref": "vpcName" } } ]
           }
        },
-       "myIGWAttachment":
+       "IGWAttachment":
        {
           "Type" : "AWS::EC2::VPCGatewayAttachment",
           "Properties" :
           {
-                "InternetGatewayId" : {"Ref": "myIGW"},
-                "VpcId" : {"Ref": "myVPC"}
+                "InternetGatewayId" : {"Ref": "igwId"},
+                "VpcId" : {"Ref": "vpcId"}
           }             
        },
-       "mySubnet1" :
+       "subnet1Id" :
        {
           "Type" : "AWS::EC2::Subnet",
           "Properties" :
           {
-             "VpcId" : { "Ref" : "myVPC" },
+             "VpcId" : { "Ref" : "vpcId" },
              "CidrBlock" :
              {
                 "Fn::Select": [0, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
@@ -64,15 +95,15 @@
                 "Fn::Select": [0, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
              },
              "MapPublicIpOnLaunch" : true,
-             "Tags" : [ { "Key" : "mySubnet1", "Value" : "1st Subnet" } ]
+             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "subnet1Name" } } ]
           }
        },
-       "mySubnet2" :
+       "subnet2Id" :
        {
           "Type" : "AWS::EC2::Subnet",
           "Properties" :
           {
-             "VpcId" : { "Ref" : "myVPC" },
+             "VpcId" : { "Ref" : "vpcId" },
              "CidrBlock" :
              {
                    "Fn::Select": [1, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
@@ -82,15 +113,15 @@
                    "Fn::Select": [1, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
              },
              "MapPublicIpOnLaunch" : true,
-             "Tags" : [ { "Key" : "mySubnet2", "Value" : "2nd Subnet" } ]
+             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "subnet2Name" } } ]
           }
        },
-       "mySubnet3" :
+       "subnet3Id" :
        {
           "Type" : "AWS::EC2::Subnet",
           "Properties" :
           {
-             "VpcId" : { "Ref" : "myVPC" },
+             "VpcId" : { "Ref" : "vpcId" },
              "CidrBlock" :
              {
                    "Fn::Select": [2, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
@@ -100,53 +131,53 @@
                    "Fn::Select": [2, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
              },
              "MapPublicIpOnLaunch" : true,
-             "Tags" : [ { "Key" : "mySubnet3", "Value" : "3rd Subnet" } ]
+             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "subnet3Name" } } ]
           }
        },
-       "myRouteTable" :
+       "routeTableId" :
        {
           "Type" : "AWS::EC2::RouteTable",
           "Properties" :
           {
-             "VpcId" : { "Ref" : "myVPC" },
-             "Tags" : [ { "Key" : "myRouteTable", "Value" : "Route Table instance" } ]
+             "VpcId" : { "Ref" : "vpcId" },
+             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "routeTableName" } } ]
           }
        },
-       "myIGWRouteTableAssociation" :
+       "IGWRouteTableAssociation" :
        {
           "Type" : "AWS::EC2::Route",
           "Properties" :
           {
-             "RouteTableId" : { "Ref" : "myRouteTable" },
+             "RouteTableId" : { "Ref" : "routeTableId" },
              "DestinationCidrBlock" : "0.0.0.0/0",
-             "GatewayId" : { "Ref" : "myIGW" }
+             "GatewayId" : { "Ref" : "igwId" }
           }
        },
-       "mySubnet1RouteTableAssociation" :
+       "subnet1RouteTableAssociation" :
        {
           "Type" : "AWS::EC2::SubnetRouteTableAssociation",
           "Properties" :
           {
-             "SubnetId" : { "Ref" : "mySubnet1" },
-             "RouteTableId" : { "Ref" : "myRouteTable" }
+             "SubnetId" : { "Ref" : "subnet1Id" },
+             "RouteTableId" : { "Ref" : "routeTableId" }
           }
        },
-       "mySubnet2RouteTableAssociation" :
+       "subnet2RouteTableAssociation" :
        {
           "Type" : "AWS::EC2::SubnetRouteTableAssociation",
           "Properties" :
           {
-             "SubnetId" : { "Ref" : "mySubnet2" },
-             "RouteTableId" : { "Ref" : "myRouteTable" }
+             "SubnetId" : { "Ref" : "subnet2Id" },
+             "RouteTableId" : { "Ref" : "routeTableId" }
           }
        },
-       "mySubnet3RouteTableAssociation" :
+       "subnet3RouteTableAssociation" :
        {
           "Type" : "AWS::EC2::SubnetRouteTableAssociation",
           "Properties" :
           {
-             "SubnetId" : { "Ref" : "mySubnet1" },
-             "RouteTableId" : { "Ref" : "myRouteTable" }
+             "SubnetId" : { "Ref" : "subnet3Id" },
+             "RouteTableId" : { "Ref" : "routeTableId" }
           }
        }
     }  
