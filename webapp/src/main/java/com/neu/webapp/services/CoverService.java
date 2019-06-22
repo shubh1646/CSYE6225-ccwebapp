@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 public class CoverService {
-    private static String path = System.getProperty("user.home")+"/Desktop/BookCoverImages";
+//    private static String path = System.getProperty("user.home")+"/BookCoverImages";
     private static final String JPEG = "image/jpeg";
     private static final String JPG = "image/jpg";
     private static final String PNG = "image/png";
@@ -41,12 +41,13 @@ public class CoverService {
         return temp.isEmpty() ? null : temp.get();
     }
 
-    public String writeFile(MultipartFile imageFile, UUID id) throws Exception{
-        File dir = new File(this.path);
+    public String writeFile(MultipartFile imageFile, UUID id, String path) throws Exception{
+
+        File dir = new File(path);
         if(!dir.exists()) {
             dir.mkdir();
         }
-        String path = this.path+"/"+id+"-"+imageFile.getOriginalFilename();
+        path +=id+"-"+imageFile.getOriginalFilename();
         File file = new File(path);
         file.createNewFile();
         FileOutputStream fout = new FileOutputStream(file);
@@ -60,16 +61,16 @@ public class CoverService {
         file.delete();
     }
 
-    public Cover addCover(Book book, MultipartFile imageFile) throws Exception{
-        String path = writeFile(imageFile, book.getId());
+    public Cover addCover(Book book, MultipartFile imageFile, String filePath) throws Exception{
+        String path = writeFile(imageFile, book.getId(), filePath);
         book.setImage(new Cover(path));
         bookRepository.save(book);
         return book.getImage();
     }
 
-    public void updateCover(Book book, Cover cover, MultipartFile imageFile) throws Exception{
+    public void updateCover(Book book, Cover cover, MultipartFile imageFile, String filePath) throws Exception{
         deleteFile(cover.getUrl());
-        String path = writeFile(imageFile, book.getId());
+        String path = writeFile(imageFile, book.getId(), filePath);
         cover.setUrl(path);
         coverRepository.save(cover);
     }
