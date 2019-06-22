@@ -1,218 +1,122 @@
 #!/bin/bash
-# create-aws-vpc
 
-echo "Enter a name"
-read name
+echo "--------------------------Welcome--------------------------"
+echo ""
 
-# region=$(aws configure get region --profile default)
-# echo $region
+AvailibilityZones=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[*].ZoneName')
+read -ra AZs <<< "$AvailibilityZones"
+echo "Enter a name for your VPC"
+read myVpc
+echo "Enter a cidr block you wish for your VPC"
+read myVpcCidrBlock
+echo "No of Subnets required"
+read number
 
-# zones=$(aws ec2 describe-availability-zones --region $region)
-# echo $zones
+# myVpc="CustomVpc"
+# myVpcCidrBlock="10.0.0.0/16"
+# number=3
+declare -a subnet_cidrArray
+echo "Enter CidrBlocks for your subnets"
+for(( i = 0; i < $number ; i++ ))
+do
+    echo "Subnet$(( i+1 )) CidrBlock:"
+    read cidr
+    subnet_cidrArray[$i]="$cidr"
+done
 
-echo "Enter availability zone 1"
-read availabilityZone1 
+echo ""
+# =======================================================================================================================================
 
-echo "Enter availability zone 2"
-read availabilityZone2
-
-echo "Enter availabilty zone 3"
-read availabilityZone3
-
-#variables used in script:
-vpcName="$name VPC"
-vpcCidrBlock="10.0.0.0/16"
-subnetName1="$name Subnet1"
-subnetName2="$name Subnet2"
-subnetName3="$name Subnet3"
-subNetCidrBlock1="10.0.64.0/18"
-subNetCidrBlock2="10.0.128.0/18"
-subNetCidrBlock3="10.0.192.0/18"
-gatewayName="$name Gateway"
-routeTableName="$name Route Table"
-destinationCidrBlock="0.0.0.0/0"
-
-echo "Creating VPC..."
-#create vpc with cidr block /16
-vpcId=$(aws ec2 create-vpc --cidr-block $vpcCidrBlock --instance-tenancy default --query 'Vpc.VpcId' --output text)
-aws ec2 create-tags --resources $vpcId --tags "Key=name,Value=$vpcName"
-
-echo "vpc id : $vpcId vpc name :  $vpcName"
-
-#add dns support
-modify_response=$(aws ec2 modify-vpc-attribute \
- --vpc-id "$vpcId" \
- --enable-dns-support "{\"Value\":true}")
- echo $modify_response
-#add dns hostnames
-modify_response=$(aws ec2 modify-vpc-attribute \
-  --vpc-id "$vpcId" \
-  --enable-dns-hostnames "{\"Value\":true}")
-
-echo $modify_response
-
-
-subnet_response1=$(aws ec2 create-subnet \
- --cidr-block "$subNetCidrBlock1" \
- --availability-zone "$availabilityZone1" \
- --vpc-id "$vpcId" --query 'Subnet.SubnetId' --output text)
- if [ $? -eq 0 ]; then
- #name the subnet
-aws ec2 create-tags \
-  --resources "$subnet_response1" \
-  --tags Key=Name,Value="$subnetName1"
- echo "Subnet Response 1: $subnet_response1"
-else
-    echo "Subnet Generation 1 Failed"
+vpcId=$(aws ec2 create-vpc --cidr-block $myVpcCidrBlock --instance-tenancy default --output text --query 'Vpc.VpcId' 2> /dev/null)
+if [ $? -ne 0 ]
+then
+    echo "Failure: The Cidr Block you entered is not valid"
     exit
 fi
+aws ec2 modify-vpc-attribute --vpc-id $vpcId --enable-dns-support "{\"Value\":true}"
+aws ec2 modify-vpc-attribute --vpc-id $vpcId --enable-dns-hostnames "{\"Value\":true}"
+aws ec2 create-tags --resources $vpcId --tags Key=Name,Value=$myVpc
+echo "$myVpc Created ................"
 
+# ---------------------------------------------------------------------------------------------------------------------------------------
 
-subnet_response2=$(aws ec2 create-subnet \
- --cidr-block "$subNetCidrBlock2" \
- --availability-zone "$availabilityZone2" \
- --vpc-id "$vpcId" --query 'Subnet.SubnetId' --output text)
- if [ $? -eq 0 ]; then
- #name the subnet
-aws ec2 create-tags \
-  --resources "$subnet_response2" \
-  --tags Key=Name,Value="$subnetName2"
- echo "Subnet Response 2: $subnet_response2"
-else
-    echo "Subnet Generation 2 Failed"
+igwId=$(aws ec2 create-internet-gateway --output text --query 'InternetGateway.InternetGatewayId' 2> /dev/null)
+if [ $? -ne 0 ]
+then
+    echo "Failure: coudn't create $myVpc-IGW"
     exit
 fi
+aws ec2 create-tags --resources $igwId --tags Key=Name,Value="$myVpc-IGW"
+echo "$myVpc-IGW Created ................"
 
-
-subnet_response3=$(aws ec2 create-subnet \
- --cidr-block "$subNetCidrBlock3" \
- --availability-zone "$availabilityZone3" \
- --vpc-id "$vpcId" --query 'Subnet.SubnetId' --output text)
- if [ $? -eq 0 ]; then
- #name the subnet
-aws ec2 create-tags \
-  --resources "$subnet_response3" \
-  --tags Key=Name,Value="$subnetName3"
- echo "Subnet Response 3: $subnet_response3"
-else
-    echo "Subnet Generation 3 Failed"
+aws ec2 attach-internet-gateway --internet-gateway-id $igwId --vpc-id $vpcId 2> /dev/null
+if [ $? -ne 0 ]
+then
+    echo "Failure: Could not attach $myVpc-IGW to your $myVpc"
     exit
 fi
+echo "$myVpc-IGW Attachment to $myVpc Completed ................"
 
+# ---------------------------------------------------------------------------------------------------------------------------------------
 
-gatewayId=$(aws ec2 create-internet-gateway \
-            --query 'InternetGateway.InternetGatewayId' --output text)
-    
-if [ $? -eq 0 ]; then
-    aws ec2 create-tags \
-        --resources "$gatewayId" \
-        --tags Key=Name,Value="$gatewayName"
-    echo "Gateway Response: $gatewayId"
-else
-    echo "Internet Gateway Failed"
+declare -a subnetIds
+a=0
+while [ $a -lt $number ]
+do
+    subnetId=$(aws ec2 create-subnet --vpc-id $vpcId --cidr-block ${subnet_cidrArray[$a]} --availability-zone ${AZs[$a]} \
+    --output text --query 'Subnet.SubnetId' 2> /dev/null)
+    subnetIds[$a]=$subnetId
+    if [ $? -ne 0 ]
+    then
+        echo "Failure: coudn't create $myVpc-Subnet$(( a+1 ))"
+        exit
+    fi
+
+    aws ec2 create-tags --resources ${subnetIds[$a]} --tags Key=Name,Value="$myVpc-Subnet${a+1}"
+    echo "$myVpc-Subnet$(( a+1 )) Created ................"
+
+    (( a++ ))
+done
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+
+routeTableId=$(aws ec2 create-route-table --vpc-id $vpcId --output text --query 'RouteTable.RouteTableId' 2> /dev/null)
+if [ $? -ne 0 ]
+then
+    echo "Failure: coudn't create Route Table with the name $myVpc-RouteTable"
     exit
 fi
+aws ec2 create-tags --resources $routeTableId --tags Key=Name,Value="$myVpc-RouteTable"
+echo "$myVpc-RouteTable Created ................"
 
-#attach gateway to vpc
-attach_response=$(aws ec2 attach-internet-gateway \
-        --internet-gateway-id "$gatewayId"  \
-        --vpc-id "$vpcId")
-if [ $? -eq 0 ]; then
-    echo Attach Response: $attach_response
- else
-    echo "Attaching vpc to gateway failed"
+# ---------------------------------------------------------------------------------------------------------------------------------------
+
+status=$(aws ec2 create-route --route-table-id $routeTableId --destination-cidr-block 0.0.0.0/0 --gateway-id $igwId \
+--output text --query 'Return' 2> /dev/null)
+if [ "$status" = "False" ]
+then
+    echo "Failure: coudn't add Route 0.0.0.0/0 to your $myVpc-RouteTable"
     exit
 fi
+echo "Route 0.0.0.0/0 add to $myVpc-RouteTable ................"
 
+# ---------------------------------------------------------------------------------------------------------------------------------------
 
-#enable public ip on subnet
-modify_response=$(aws ec2 modify-subnet-attribute \
-    --subnet-id "$subnet_response1" \
-    --map-public-ip-on-launch)
-if [ $? -eq 0 ]; then
-    echo Public Ip: $modify_response
- else
-    echo "Public ip on subnet Failed"
-    exit
-fi
+for (( i=0; i<${#subnetIds[@]} ; i++ ))
+do
+    associationId=$(aws ec2 associate-route-table --route-table-id $routeTableId --subnet-id ${subnetIds[$i]} \
+    --output text --query 'AssociationId' 2> /dev/null)
+    if [ -z $associationId ]
+    then
+        echo "Failure: coudn't associate Subnet-$(( i+1 )) to $myVpc-RouteTable"
+        exit
+    fi
+    echo "Associated $myVpc-Subnet$(( i+1 )) to $myVpc-RouteTable ................"
+done
 
-#enable public ip on subnet
-modify_response=$(aws ec2 modify-subnet-attribute \
-    --subnet-id "$subnet_response2" \
-    --map-public-ip-on-launch)
-if [ $? -eq 0 ]; then
-    echo $modify_response
- else
-    echo "Public ip on subnet Failed"
-    exit
-fi
-
-#enable public ip on subnet
-modify_response=$(aws ec2 modify-subnet-attribute \
-    --subnet-id "$subnet_response3" \
-    --map-public-ip-on-launch)
-if [ $? -eq 0 ]; then
-    echo $modify_response
- else
-    echo "Public ip on subnet Failed"
-    exit
-fi
-
-#create route table for vpc
-routeTableId=$(aws ec2 create-route-table \
- --vpc-id "$vpcId" --query 'RouteTable.RouteTableId' --output text )
-if [ $? -eq 0 ]; then 
-#name the route table
-    aws ec2 create-tags \
-        --resources "$routeTableId" \
-        --tags Key=Name,Value="$routeTableName"
-    echo Route Table: $routeTableId
-else
-    echo "Route Table Creation Failed"
-    exit
-fi
-
-#add route to subnet
-associate_response1=$(aws ec2 associate-route-table \
-    --subnet-id "$subnet_response1" \
-    --route-table-id "$routeTableId")
-if [ $? -eq 0 ]; then
-    echo Route-Subnet1: $associate_response1
-else   
-    echo "Route Subnet 1 Failed"
-    exit
-fi
-
-#add route to subnet
-associate_response2=$(aws ec2 associate-route-table \
-    --subnet-id "$subnet_response2" \
-    --route-table-id "$routeTableId")
-if [ $? -eq 0 ]; then
-    echo Route-Subnet2: $associate_response2
-else   
-    echo "Route Subnet 2 Failed"
-    exit
-fi
-
-#add route to subnet
-associate_response3=$(aws ec2 associate-route-table \
-    --subnet-id "$subnet_response3" \
-    --route-table-id "$routeTableId")
-if [ $? -eq 0 ]; then
-    echo Route-Subnet3: $associate_response3
-else   
-    echo "Route Subnet 3 Failed"
-    exit
-fi
-
-#add route for the internet gateway
-if [ $? -eq 0 ]; then
-    route_response=$(aws ec2 create-route --route-table-id "$routeTableId" --destination-cidr-block "$destinationCidrBlock" --gateway-id "$gatewayId")
-    echo Route For the Internet Gateway: $route_response
-else
-   echo "Adding route to the gateway failed"
-   exit
-fi
- 
-echo  " "
-echo  "VPC created"
+echo ""
+echo "--------------------------"
+echo "--------------------------"
+echo "Stack created Successfully"
+echo "--------------------------"
+echo "--------------------------"
