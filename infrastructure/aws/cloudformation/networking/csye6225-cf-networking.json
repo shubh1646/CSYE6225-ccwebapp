@@ -1,5 +1,4 @@
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
     "Description" : "AWS CloudFormation Template for a Networking stack with 1-VPC, 3-Subnets, 1-IGW, 1-RT",
     "Parameters":
     {
@@ -180,6 +179,6 @@
              "RouteTableId" : { "Ref" : "routeTableId" }
           }
        }
-    }  
+    }
  }
  
