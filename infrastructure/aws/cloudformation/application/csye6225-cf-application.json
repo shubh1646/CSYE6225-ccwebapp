@@ -1,8 +1,198 @@
+
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description" : "AWS CloudFormation Template for a Application stack",
-    "Parameters": {
-    },
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "AWS CloudFormation Template for a Application stack",
+  "Parameters": {
+      "NetworkStackName": {
+          "Description": "Web-Application Network Stack Name",
+          "Type": "String",
+          "MinLength" : "1",
+          "MaxLength" : "20",
+          "AllowedPattern" : "^[a-zA-Z0-9]*$"
+      },
+      "ec2InstanceType": {
+          "Description": "EC2 Instance hosting Web-Application",
+          "Type": "String",
+          "Default": "t2.micro",
+          "AllowedValues": [
+              "t2.micro",
+              "t2.nano"
+          ]
+      },
+      "rdsInstanceType": {
+          "Description": "RDS DBInstance hosting MySql Server",
+          "Type": "String",
+          "Default": "db.t2.micro",
+          "AllowedValues": [
+              "db.t2.micro",
+              "db.t2.small"
+          ]
+      }
+  },
+  "Resources": {
+      "ec2RoleId": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+             "AssumeRolePolicyDocument": {
+                "Statement": [{
+                   "Effect": "Allow",
+                   "Principal": {
+                      "Service": ["ec2.amazonaws.com"]
+                   },
+                   "Action": ["sts:AssumeRole"]
+                }]
+             },
+             "Path": "/",
+             "RoleName": "WebApp-EC2_Role"
+          }
+      },
+      "ec2InstanceProfileId": {
+          "Type" : "AWS::IAM::InstanceProfile",
+          "DependsOn": "ec2RoleId",
+          "Properties" : {
+              "Roles" : [ { "Ref": "ec2RoleId" } ],
+              "Path" : "/",
+              "InstanceProfileName" : "WebApp-EC2_InstanceProfile"
+          }
+      },
+      "s3BucketCrudPolicyId": {
+          "Type": "AWS::IAM::Policy",
+          "DependsOn": [ "ec2RoleId" ],
+          "Properties": {
+              "PolicyName": "S3_Policy-EC2",
+              "PolicyDocument": {
+                  "Version" : "2012-10-17",
+                  "Statement": [
+                      {
+                          "Sid": "AllowListingOfImagesFolder",
+                          "Effect": "Allow",
+                          "Action": ["s3:ListBucket"],
+                          "Resource": "arn:aws:s3:::csye6225-su19-sebastianc.me.csye6225.com",
+                          "Condition": {
+                              "StringEquals": {
+                                  "s3:prefix": ["Images"],
+                                  "s3:delimiter": ["/"]
+                              }
+                          }
+                      },
+                      {
+                          "Sid": "AllowGetPutDeleteActionsInImagesFolder",
+                          "Effect": "Allow",
+                          "Action": ["s3:ListObject", "s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+                          "Resource": "arn:aws:s3:::csye6225-su19-sebastianc.me.csye6225.com/Images/*"
+                      }
+                  ]
+              },
+              "Roles": [{ "Ref": "ec2RoleId" }]
+          }
+      },
+      "s3BucketId": {
+          "Type" : "AWS::S3::Bucket",
+          "DeletionPolicy" : "Delete",
+          "Properties" : {
+              "BucketName" : "csye6225-su19-sebastianc.me.csye6225.com",
+              "PublicAccessBlockConfiguration" : {
+                  "BlockPublicAcls" : "true",
+                  "BlockPublicPolicy" : "true",
+                  "IgnorePublicAcls" : "true",
+                  "RestrictPublicBuckets" : "true"
+              }
+          }
+      },
+      "dbSubnetGroupId" : {
+          "Type" : "AWS::RDS::DBSubnetGroup",
+          "Properties" : {
+              "DBSubnetGroupDescription" : "Data Base Group Name to be assigned to ",
+              "DBSubnetGroupName" : "",
+              "SubnetIds" : [ 
+                  { "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}--subnet2Id" } },
+                  { "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}--subnet3Id" } }
+              ]
+          }
+      },  
+      "rdsDBInstanceId": {
+          "Type" : "AWS::RDS::DBInstance",
+          "DeletionPolicy" : "Delete",
+          "DependsOn": [ "dbSubnetGroupId" ],
+          "Properties" : {
+              "Engine": "MySQL",
+              "EngineVersion": "8.0.15",
+              "DBInstanceClass" : "db.t2.micro",
+              "MultiAZ" : "false",
+              "DBInstanceIdentifier" : "csye6225-su19",
+              "MasterUsername" : "csye6225master",
+              "MasterUserPassword" : "csye6225password",
+              "DBSubnetGroupName" : { "Ref": "dbSubnetGroupId" },
+              "PubliclyAccessible" : "true",
+              "DBName" : "csye6225",
+
+              "VPCSecurityGroups" : "",
+
+              "Port" : "3306",
+              "AvailabilityZone" : {
+                  "Fn::Select": [1, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
+              }
+          }
+      },
+
+      "myDynamoDBTable" : {
+
+        "Type" : "AWS::DynamoDB::Table",
+        "Properties" : {
+        "TableName" :"csye6225",
+          "AttributeDefinitions" : [
+            {
+              "AttributeName" : "id",
+              "AttributeType" : "S"   
+            }
+          ],
+          "KeySchema" : [
+            {
+              "AttributeName" : "id",
+              "KeyType" : "HASH"
+            }
+            
+          ],
+          "ProvisionedThroughput" : {
+            "ReadCapacityUnits" : "5",
+            "WriteCapacityUnits" : "5"
+          }
+                              
+        }
+  }
+},
+
+  "outputs": {
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*****************************************
     "Resources" : {
       "myDynamoDBTable" : {
 
@@ -30,8 +220,6 @@
         }
   }
 },
-    "outputs": {
-    }
- }
+
 
  
