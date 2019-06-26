@@ -1,184 +1,170 @@
 {
-    "Description" : "AWS CloudFormation Template for a Networking stack with 1-VPC, 3-Subnets, 1-IGW, 1-RT",
-    "Parameters":
-    {
-       "vpcName":
-       {
+   "AWSTemplateFormatVersion" : "2010-09-09",
+   "Description" : "AWS CloudFormation Template for a Networking stack with 1-VPC, 3-Subnets, 1-IGW, 1-RT",
+   "Parameters": {
+      "vpcCidrBlock": {
          "Type": "String",
-         "AllowedPattern": "^[a-zA-Z0-9]*$",
-         "Description": "user specified VPC name"
-       },
-       "igwName":
-       {
+         "Default": "10.0.0.0/16",
+         "AllowedValues": ["10.0.0.0/16", "192.168.0.0/16", "172.31.0.0/16"],
+         "Description": "Cidr BLock from user"
+      },
+      "subnetCidrBits": {
          "Type": "String",
-         "Description": "Ineternet Gateway Name"
-       },
-       "subnet1Name":
-       {
-         "Type": "String",
-         "Description": "Subnet-1 Name"
-       },
-       "subnet2Name":
-       {
-         "Type": "String",
-         "Description": "Subnet-2 Name"
-       },
-       "subnet3Name":
-       {
-         "Type": "String",
-         "Description": "Subnet-3 Name"
-       },
-       "routeTableName":
-       {
-         "Type": "String",
-         "Description": "Route Table name"
-       },
-       "vpcCidrBlock":
-       {
-          "Type": "String",
-          "Default": "10.0.0.0/16",
-          "AllowedValues": ["10.0.0.0/16", "192.168.0.0/16", "172.31.0.0/16"],
-          "Description": "Cidr BLock from user"
-       },
-       "subnetCidrBits":
-       {
-          "Type": "String",
-          "Default": "14",
-          "AllowedValues": ["16", "14", "12", "10", "8", "6", "4"],
-          "Description": "Cidr Bits from user"
-       }
-    },
-    "Resources":
-    {
-       "igwId":
-       {
-          "Type" : "AWS::EC2::InternetGateway",
-          "Properties" :
-          {
-                "Tags" : [ { "Key" : "Name", "Value" : {"Ref": "igwName"} } ]
-          }             
-       },
-       "vpcId" : 
-       {
-          "Type" : "AWS::EC2::VPC",
-          "Properties" :
-          {
-             "CidrBlock" : {"Ref": "vpcCidrBlock"},
-             "EnableDnsSupport" : "true",
-             "EnableDnsHostnames" : "true",
-             "InstanceTenancy" : "default",
-             "Tags" : [ {"Key" : "Name", "Value" : { "Ref": "vpcName" } } ]
-          }
-       },
-       "IGWAttachment":
-       {
-          "Type" : "AWS::EC2::VPCGatewayAttachment",
-          "Properties" :
-          {
-                "InternetGatewayId" : {"Ref": "igwId"},
-                "VpcId" : {"Ref": "vpcId"}
-          }             
-       },
-       "subnet1Id" :
-       {
-          "Type" : "AWS::EC2::Subnet",
-          "Properties" :
-          {
-             "VpcId" : { "Ref" : "vpcId" },
-             "CidrBlock" :
-             {
-                "Fn::Select": [0, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
-             },
-             "AvailabilityZone" :
-             {
-                "Fn::Select": [0, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
-             },
-             "MapPublicIpOnLaunch" : true,
-             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "subnet1Name" } } ]
-          }
-       },
-       "subnet2Id" :
-       {
-          "Type" : "AWS::EC2::Subnet",
-          "Properties" :
-          {
-             "VpcId" : { "Ref" : "vpcId" },
-             "CidrBlock" :
-             {
-                   "Fn::Select": [1, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
-             },
-             "AvailabilityZone" :
-             {
-                   "Fn::Select": [1, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
-             },
-             "MapPublicIpOnLaunch" : true,
-             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "subnet2Name" } } ]
-          }
-       },
-       "subnet3Id" :
-       {
-          "Type" : "AWS::EC2::Subnet",
-          "Properties" :
-          {
-             "VpcId" : { "Ref" : "vpcId" },
-             "CidrBlock" :
-             {
-                   "Fn::Select": [2, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
-             },
-             "AvailabilityZone" :
-             {
-                   "Fn::Select": [2, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
-             },
-             "MapPublicIpOnLaunch" : true,
-             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "subnet3Name" } } ]
-          }
-       },
-       "routeTableId" :
-       {
-          "Type" : "AWS::EC2::RouteTable",
-          "Properties" :
-          {
-             "VpcId" : { "Ref" : "vpcId" },
-             "Tags" : [ { "Key" : "Name", "Value" : { "Ref": "routeTableName" } } ]
-          }
-       },
-       "IGWRouteTableAssociation" :
-       {
-          "Type" : "AWS::EC2::Route",
-          "Properties" :
-          {
-             "RouteTableId" : { "Ref" : "routeTableId" },
-             "DestinationCidrBlock" : "0.0.0.0/0",
-             "GatewayId" : { "Ref" : "igwId" }
-          }
-       },
-       "subnet1RouteTableAssociation" :
-       {
-          "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-          "Properties" :
-          {
-             "SubnetId" : { "Ref" : "subnet1Id" },
-             "RouteTableId" : { "Ref" : "routeTableId" }
-          }
-       },
-       "subnet2RouteTableAssociation" :
-       {
-          "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-          "Properties" :
-          {
-             "SubnetId" : { "Ref" : "subnet2Id" },
-             "RouteTableId" : { "Ref" : "routeTableId" }
-          }
-       },
-       "subnet3RouteTableAssociation" :
-       {
-          "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-          "Properties" :
-          {
-             "SubnetId" : { "Ref" : "subnet3Id" },
-             "RouteTableId" : { "Ref" : "routeTableId" }
-          }
-       }
-    }
+         "Default": "14",
+         "AllowedValues": ["16", "14", "12", "10", "8", "6", "4"],
+         "Description": "Cidr Bits from user"
+      }
+   },
+   "Resources": {
+      "igwId": {
+         "Type" : "AWS::EC2::InternetGateway",
+         "Properties" : {
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-IGW" } 
+            } ]
+         }             
+      },
+      "vpcId" : {
+         "Type" : "AWS::EC2::VPC",
+         "Properties" : {
+            "CidrBlock" : {"Ref": "vpcCidrBlock"},
+            "EnableDnsSupport" : "true",
+            "EnableDnsHostnames" : "true",
+            "InstanceTenancy" : "default",
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-Vpc" } 
+            } ]
+         }
+      },
+      "IGWAttachment" : {
+         "Type" : "AWS::EC2::VPCGatewayAttachment",
+         "Properties" : {
+               "InternetGatewayId" : {"Ref": "igwId"},
+               "VpcId" : {"Ref": "vpcId"}
+         }             
+      },
+      "subnet1Id" : {
+         "Type" : "AWS::EC2::Subnet",
+         "Properties" : {
+            "VpcId" : { "Ref" : "vpcId" },
+            "CidrBlock" : {
+               "Fn::Select": [0, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
+            },
+            "AvailabilityZone" : {
+               "Fn::Select": [0, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
+            },
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-Subnet-1" } 
+            } ]
+         }
+      },
+      "subnet2Id" :
+      {
+         "Type" : "AWS::EC2::Subnet",
+         "Properties" : {
+            "VpcId" : { "Ref" : "vpcId" },
+            "CidrBlock" : {
+               "Fn::Select": [1, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
+            },
+            "AvailabilityZone" : {
+               "Fn::Select": [1, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
+            },
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-Subnet-2" } 
+            } ]
+         }
+      },
+      "subnet3Id" : {
+         "Type" : "AWS::EC2::Subnet",
+         "Properties" : {
+            "VpcId" : { "Ref" : "vpcId" },
+            "CidrBlock" : {
+                  "Fn::Select": [2, { "Fn::Cidr": [ {"Ref": "vpcCidrBlock"}, "3", {"Ref": "subnetCidrBits"}] } ]
+            },
+            "AvailabilityZone" : {
+                  "Fn::Select": [2, { "Fn::GetAZs" : { "Ref" : "AWS::Region" } }]
+            },
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-Subnet-3" } 
+            } ]
+         }
+      },
+      "routeTableId" :
+      {
+         "Type" : "AWS::EC2::RouteTable",
+         "Properties" : {
+            "VpcId" : { "Ref" : "vpcId" },
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-RouteTable" } 
+            } ]
+         }
+      },
+      "IGWRouteTableAssociation" : {
+         "Type" : "AWS::EC2::Route",
+         "Properties" : {
+            "RouteTableId" : { "Ref" : "routeTableId" },
+            "DestinationCidrBlock" : "0.0.0.0/0",
+            "GatewayId" : { "Ref" : "igwId" }
+         }
+      },
+      "subnet1RouteTableAssociation" : {
+         "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+         "Properties" : {
+            "SubnetId" : { "Ref" : "subnet1Id" },
+            "RouteTableId" : { "Ref" : "routeTableId" }
+         }
+      },
+      "subnet2RouteTableAssociation" : {
+         "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+         "Properties" : {
+            "SubnetId" : { "Ref" : "subnet2Id" },
+            "RouteTableId" : { "Ref" : "routeTableId" }
+         }
+      },
+      "subnet3RouteTableAssociation" : {
+         "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+         "Properties" : {
+            "SubnetId" : { "Ref" : "subnet3Id" },
+            "RouteTableId" : { "Ref" : "routeTableId" }
+         }
+      }
+   },
+   "Outputs": {
+      "vpcId": {
+         "Description": "Vpc Id",
+         "Value": { "Ref": "vpcId" },
+         "Export": {
+            "Name": { "Fn::Sub": "${AWS::StackName}-vpcId" }
+         }
+      },
+      "subnet1Id": {
+         "Description": "Subnet-1 Id",
+         "Value": { "Ref": "subnet1Id" },
+         "Export": {
+            "Name": { "Fn::Sub": "${AWS::StackName}-subnet1Id" }
+         }
+      },
+      "subnet2Id": {
+         "Description": "Subnet-2 Id",
+         "Value": { "Ref": "subnet2Id" },
+         "Export": {
+            "Name": { "Fn::Sub": "${AWS::StackName}-subnet2Id" }
+         }
+      },
+      "subnet3Id": {
+         "Description": "Subnet-3 Id",
+         "Value": { "Ref": "subnet3Id" },
+         "Export": {
+            "Name": { "Fn::Sub": "${AWS::StackName}-subnet3Id" }
+         }
+      }
+   }
  }
- 
+
+
