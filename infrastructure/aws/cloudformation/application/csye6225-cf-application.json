@@ -61,7 +61,7 @@
               "Engine": "MySQL",
               "EngineVersion": "8.0.15",
               "DBInstanceClass" : "db.t2.micro",
-              "AllocatedStorage" : "2",
+              "AllocatedStorage" : "5",
               "MultiAZ" : "false",
               "DBInstanceIdentifier" : "csye6225-su19",
               "MasterUsername" : "csye6225master",
@@ -144,7 +144,7 @@
       "IpProtocol" : "tcp",
       "FromPort" : "3306",
       "ToPort" : "3306",
-      "SourceSecurityGroupId" : {"Ref" : "WebappSecurityGroup"}
+    "SourceSecurityGroupId" : {"Ref" : "WebappSecurityGroup"},
 
      }
    ]
