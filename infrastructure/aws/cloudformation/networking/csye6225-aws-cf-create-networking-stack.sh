@@ -1,15 +1,7 @@
 #!/bin/bash
 
-echo "enter the name for your stack(alphanumeric)"
+echo "enter the name for your Virtual Private Cloud stack(alphanumeric)"
 read stackName
-
-echo "enter the name for your vpc in this stack(alphanumeric)"
-read vpcName
-igwName=$vpcName"-IGW"
-subnet1Name=$vpcName"-Subnet1"
-subnet2Name=$vpcName"-Subnet2"
-subnet3Name=$vpcName"-Subnet3"
-routeTableName=$vpcName"-RouteTable"
 
 aws cloudformation describe-stacks --stack-name $stackName &> /dev/null
 
@@ -50,15 +42,8 @@ fi
 
 status=$(aws cloudformation create-stack --stack-name $stackName \
 --template-body file://csye6225-cf-networking.json \
---parameters \
-ParameterKey=vpcName,ParameterValue=$vpcName \
-ParameterKey=igwName,ParameterValue=$igwName \
-ParameterKey=subnet1Name,ParameterValue=$subnet1Name \
-ParameterKey=subnet2Name,ParameterValue=$subnet2Name \
-ParameterKey=subnet3Name,ParameterValue=$subnet3Name \
-ParameterKey=routeTableName,ParameterValue=$routeTableName \
-ParameterKey=vpcCidrBlock,ParameterValue=$vpcCidrBlock  \
-ParameterKey=subnetCidrBits,ParameterValue=$subnetCidrBits \
+--parameters ParameterKey=vpcCidrBlock,ParameterValue=$vpcCidrBlock \
+--parameters ParameterKey=subnetCidrBits,ParameterValue=$subnetCidrBits \
 --on-failure DELETE)
 if [ $? -eq 0 ]
 then
