@@ -181,6 +181,27 @@
           }
        }
     },
+    "DBServerSecurityGroup" : {
+    "Type" : "AWS::EC2::SecurityGroup",
+    "Properties" : {
+    "GroupName":"DBServerSecurityGroup",
+      "GroupDescription" : "Enable TCP access via port 3306",
+      "VpcId":{"Ref":"vpdID"},
+      "SecurityGroupIngress" : [ {
+        "IpProtocol" : "tcp",
+        "FromPort" : "3306",
+        "ToPort" : "3306",
+        "SourceSecurityGroupId" : {"Ref" : "WebServerSecurityGroup"}
+       }
+     ]
+    }
+  },    
+
+
+
+
+
+
     "outputs": {
        
     }

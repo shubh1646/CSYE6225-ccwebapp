@@ -3,9 +3,35 @@
     "Description" : "AWS CloudFormation Template for a Application stack",
     "Parameters": {
     },
-    "Resources": {
-    },
+    "Resources" : {
+      "myDynamoDBTable" : {
+
+        "Type" : "AWS::DynamoDB::Table",
+        "Properties" : {
+        "TableName" :"csye6225",
+          "AttributeDefinitions" : [
+            {
+              "AttributeName" : "id",
+              "AttributeType" : "S"   
+            }
+          ],
+          "KeySchema" : [
+            {
+              "AttributeName" : "id",
+              "KeyType" : "HASH"
+            }
+            
+          ],
+          "ProvisionedThroughput" : {
+            "ReadCapacityUnits" : "5",
+            "WriteCapacityUnits" : "5"
+          }
+                              
+        }
+  }
+},
     "outputs": {
     }
  }
+
  
