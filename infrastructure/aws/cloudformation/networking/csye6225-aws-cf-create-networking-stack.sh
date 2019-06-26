@@ -41,9 +41,9 @@ fi
 
 
 status=$(aws cloudformation create-stack --stack-name $stackName \
---template-body file://csye6225-cf-networking.json \
---parameters ParameterKey=vpcCidrBlock,ParameterValue=$vpcCidrBlock \
---parameters ParameterKey=subnetCidrBits,ParameterValue=$subnetCidrBits \
+--template-body file://csye6225-cf-networking.json --parameters \
+ParameterKey=vpcCidrBlock,ParameterValue=$vpcCidrBlock \
+ParameterKey=subnetCidrBits,ParameterValue=$subnetCidrBits \
 --on-failure DELETE)
 if [ $? -eq 0 ]
 then
