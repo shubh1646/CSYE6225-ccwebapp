@@ -1,11 +1,29 @@
 {
     "Description" : "AWS CloudFormation Template",
+    "Parameters" : {
+      "NetworkStackNameParameter" : {
+        "Type" : "String",
+        "Default" : "csye6225"
+      },
+      "MyImageId" : {
+        "Type" : "String",
+        "Description" : "Image Id - CentOS"
+      },
+      "MyVPC" : {
+        "Type" : "String",
+        "Default" : "vpc-001f21a623ae5ec2e"
+      },
+      "SubnetId" : {
+        "Type" : "String",
+        "Default" : "subnet-0e14befc2ed734284"
+      }
+    },
     "Resources": {
       "MySecurityGroup":{
         "Type":"AWS::EC2::SecurityGroup",
         "Properties":{
           "GroupName":"csye6225securitygroup",
-          "VpcId":"vpc-001f21a623ae5ec2e",
+          "VpcId": {"fn::ImportValue" : "VpcId"},
           "Tags" :[{"Key":"Name","Value":"csye6225-securitygroup"}],
           "GroupDescription":"SG for web server",
           "SecurityGroupIngress":[
@@ -34,11 +52,13 @@
       "MyEC2Instance":{
         "Type":"AWS::EC2::Instance",
         "Properties":{
-          "ImageId":"ami-0bd7abb07395fc791",
+          "ImageId": {
+            "Ref" : "MyImageId"
+          },
           "InstanceType":"t2.micro",
           "NetworkInterfaces" : [{
             "AssociatePublicIpAddress" : "True",
-            "SubnetId": "subnet-0e14befc2ed734284",
+            "SubnetId" : {"Fn::ImportValue" : "SubnetId"},
             "DeviceIndex" : "0",
             "GroupSet" : [ { "Ref" : "MySecurityGroup" } ]
           }],
