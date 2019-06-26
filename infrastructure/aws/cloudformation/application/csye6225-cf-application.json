@@ -1,116 +1,59 @@
 
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "AWS CloudFormation Template for a Application stack",
+  "Description" : "AWS CloudFormation Template for a Application stack ec2 instance ",
   "Parameters": {
       "NetworkStackName": {
           "Description": "Web-Application Network Stack Name",
-          "Type": "String",
-          "MinLength" : "1",
-          "MaxLength" : "20",
-          "AllowedPattern" : "^[a-zA-Z0-9]*$"
+          "Type": "String"
       },
-      "ec2InstanceType": {
-          "Description": "EC2 Instance hosting Web-Application",
-          "Type": "String",
-          "Default": "t2.micro",
-          "AllowedValues": [
-              "t2.micro",
-              "t2.nano"
-          ]
-      },
-      "rdsInstanceType": {
-          "Description": "RDS DBInstance hosting MySql Server",
-          "Type": "String",
-          "Default": "db.t2.micro",
-          "AllowedValues": [
-              "db.t2.micro",
-              "db.t2.small"
-          ]
+      "amiId" : {
+        "Description" :"Image-ID of created Centos",
+        "Type" : "String"
       }
   },
   "Resources": {
-      "ec2RoleId": {
-          "Type": "AWS::IAM::Role",
-          "Properties": {
-             "AssumeRolePolicyDocument": {
-                "Statement": [{
-                   "Effect": "Allow",
-                   "Principal": {
-                      "Service": ["ec2.amazonaws.com"]
-                   },
-                   "Action": ["sts:AssumeRole"]
-                }]
-             },
-             "Path": "/",
-             "RoleName": "WebApp-EC2_Role"
-          }
+    "MyEC2Instance":{
+        "Type":"AWS::EC2::Instance",
+        "Properties":{
+          "ImageId": { "Ref" : "amiId" },
+          "InstanceType": "t2.micro",
+          "NetworkInterfaces" : [{
+            "AssociatePublicIpAddress" : true,
+            "SubnetId" : {"Fn::ImportValue" : { "Fn::Sub": "${NetworkStackName}-subnet1Id" } },
+            "DeviceIndex": "0",
+            "GroupSet" : [ { "Ref" : "WebappSecurityGroup" } ]
+          }],
+       
+         
+          "KeyName":"csye6225",
+          "BlockDeviceMappings" : [
+            {
+               "DeviceName" : "/dev/sda1",
+               "Ebs" : {
+                 "VolumeType" : "gp2",
+                 "DeleteOnTermination" : false,
+                 "VolumeSize" : "20"
+               }
+             }
+            ]
+            }
       },
-      "ec2InstanceProfileId": {
-          "Type" : "AWS::IAM::InstanceProfile",
-          "DependsOn": "ec2RoleId",
-          "Properties" : {
-              "Roles" : [ { "Ref": "ec2RoleId" } ],
-              "Path" : "/",
-              "InstanceProfileName" : "WebApp-EC2_InstanceProfile"
-          }
-      },
-      "s3BucketCrudPolicyId": {
-          "Type": "AWS::IAM::Policy",
-          "DependsOn": [ "ec2RoleId" ],
-          "Properties": {
-              "PolicyName": "S3_Policy-EC2",
-              "PolicyDocument": {
-                  "Version" : "2012-10-17",
-                  "Statement": [
-                      {
-                          "Sid": "AllowListingOfImagesFolder",
-                          "Effect": "Allow",
-                          "Action": ["s3:ListBucket"],
-                          "Resource": "arn:aws:s3:::csye6225-su19-sebastianc.me.csye6225.com",
-                          "Condition": {
-                              "StringEquals": {
-                                  "s3:prefix": ["Images"],
-                                  "s3:delimiter": ["/"]
-                              }
-                          }
-                      },
-                      {
-                          "Sid": "AllowGetPutDeleteActionsInImagesFolder",
-                          "Effect": "Allow",
-                          "Action": ["s3:ListObject", "s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
-                          "Resource": "arn:aws:s3:::csye6225-su19-sebastianc.me.csye6225.com/Images/*"
-                      }
-                  ]
-              },
-              "Roles": [{ "Ref": "ec2RoleId" }]
-          }
-      },
-      "s3BucketId": {
-          "Type" : "AWS::S3::Bucket",
-          "DeletionPolicy" : "Delete",
-          "Properties" : {
-              "BucketName" : "csye6225-su19-sebastianc.me.csye6225.com",
-              "PublicAccessBlockConfiguration" : {
-                  "BlockPublicAcls" : "true",
-                  "BlockPublicPolicy" : "true",
-                  "IgnorePublicAcls" : "true",
-                  "RestrictPublicBuckets" : "true"
-              }
-          }
-      },
+
       "dbSubnetGroupId" : {
           "Type" : "AWS::RDS::DBSubnetGroup",
           "Properties" : {
               "DBSubnetGroupDescription" : "Data Base Group Name to be assigned to ",
-              "DBSubnetGroupName" : "",
+              "DBSubnetGroupName" : "DBsubnetGroup",
               "SubnetIds" : [ 
-                  { "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}--subnet2Id" } },
-                  { "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}--subnet3Id" } }
-              ]
+                  { "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}-subnet2Id" } },
+                  { "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}-subnet3Id" } }
+              
+              
+                ]
           }
       },  
-      "rdsDBInstanceId": {
+      "MyDBInstance": {
           "Type" : "AWS::RDS::DBInstance",
           "DeletionPolicy" : "Delete",
           "DependsOn": [ "dbSubnetGroupId" ],
@@ -118,15 +61,15 @@
               "Engine": "MySQL",
               "EngineVersion": "8.0.15",
               "DBInstanceClass" : "db.t2.micro",
+              "AllocatedStorage" : "2",
               "MultiAZ" : "false",
               "DBInstanceIdentifier" : "csye6225-su19",
               "MasterUsername" : "csye6225master",
               "MasterUserPassword" : "csye6225password",
               "DBSubnetGroupName" : { "Ref": "dbSubnetGroupId" },
+              "DBSecurityGroups" :  [{ "Ref": "DBSecurityGroup"  }],
               "PubliclyAccessible" : "true",
               "DBName" : "csye6225",
-
-              "VPCSecurityGroups" : "",
 
               "Port" : "3306",
               "AvailabilityZone" : {
@@ -159,25 +102,60 @@
           }
                               
         }
-  }
-},
+  },
 
-  "outputs": {
+ 
+  "WebappSecurityGroup":{                                               
+    "Type":"AWS::EC2::SecurityGroup",
+    "Properties":{
+     "GroupName" : "csye6225-securitygroup",                            
+      "GroupDescription":"Security Group for web server",
+      "VpcId":{"Fn::ImportValue":{"Fn::Sub" : "${NetworkStackName}-vpcId"}},
+      "SecurityGroupIngress":[
+        {
+          "IpProtocol":"tcp",
+          "FromPort":"22",
+          "ToPort":"22",
+          "CidrIp":"0.0.0.0/0"
+        },
+        {
+          "IpProtocol":"tcp",
+          "FromPort":"80",
+          "ToPort":"80",
+          "CidrIp":"0.0.0.0/0"
+        },
+        {
+          "IpProtocol":"tcp",
+          "FromPort":"443",
+          "ToPort":"443",
+          "CidrIp":"0.0.0.0/0"
+        }
+      ]
+    }
+    
+ },
+  "DBSecurityGroup" : {
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+  "GroupName":"csye6225-DBServerSecurityGroup",
+    "GroupDescription" : "Enable TCP access via port 3306",
+    "VpcId":{"Fn::ImportValue":{"Fn::Sub" : "${NetworkStackName}-vpcId"}},
+    "SecurityGroupIngress" : [ {
+      "IpProtocol" : "tcp",
+      "FromPort" : "3306",
+      "ToPort" : "3306",
+      "SourceSecurityGroupId" : {"Ref" : "WebappSecurityGroup"}
+
+     }
+   ]
   }
 }
 
 
 
 
-
-
-
-
-
-
-
-
-
+}
+}
 
 
 

@@ -1,58 +1,49 @@
 #!/bin/bash
 
 echo "enter the name for your Application Stack(alphanumeric)"
-read applicationstackName
-echo "enter the name of your Virtual Private Cloud stack(alphanumeric)"
-read networkingstackName
+read applicationStackName
+echo "enter the name of your Virtual Private Cloud (networking) stack(alphanumeric)"
+read NetworkStackName
 
-if [ -z "$applicationstackName" ] || [ -z "$networkingstackName" ]
+if [ -z "$applicationStackName" ] || [ -z "$NetworkStackName" ]
 then
     echo "Failed: Enter a valid name for both application stack and networking stack"
     exit
 fi
 
-aws cloudformation describe-stacks --stack-name $applicationstackName &> /dev/null
+aws cloudformation describe-stacks --stack-name $applicationStackName &> /dev/null
 if [ $? -eq 0 ]
 then
-	echo "Failed: Stack by this name already exist"
-	exit
+   echo "Failed: Stack by this name already exist"
+   exit
 fi
-aws cloudformation describe-stacks --stack-name $networkingstackName &> /dev/null
+aws cloudformation describe-stacks --stack-name $NetworkStackName &> /dev/null
 if [ $? -ne 0 ]
 then
-	echo "Failed: Your Virtual Private Cloud Stack not setup"
-	exit
+   echo "Failed: Your Virtual Private Cloud Stack not setup"
+   exit
 fi
 
-echo "enter the "
-read vpcCidrBlock
-if [ -z "$vpcCidrBlock" ]
+
+echo "enter the ami id"
+read amiId
+if [ -z "amiId" ]
 then
-    echo "Failed: enter a CidrBlock representation for you VPC"
+    echo "Failed: enter a Ami Id"
     exit
 fi
 
+status=$(aws cloudformation create-stack --stack-name $applicationStackName \
+--template-body file://csye6225-cf-application.json \
+--parameters \
+ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
+ParameterKey=amiId,ParameterValue=$amiId \
+--on-failure DELETE)
 
-echo "enter the CidrBits of the Subnet between 4-16"
-read subnetCidrBits
-if [ -n $subnetCidrBits ]
-then
-    if [[ ( $subnetCidrBits -gt 16 ) || ( $subnetCidrBits -lt 4 ) ]]
-    then
-        exit
-    fi
-else
-    echo "cidrBits cant be null"
-    exit
-fi
-
-
-status=$(aws cloudformation create-stack --stack-name $stackName \
---template-body file://csye6225-cf-networking.json --on-failure DELETE)
 if [ $? -eq 0 ]
 then
     echo "please wait....."
-    aws cloudformation wait stack-create-complete --stack-name $stackName
+    aws cloudformation wait stack-create-complete --stack-name $applicationStackName
     if [ $? -eq 0 ]
     then
         echo "Successfully setup the stack"
