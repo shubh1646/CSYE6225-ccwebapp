@@ -30,7 +30,7 @@
                "DeviceName" : "/dev/sda1",
                "Ebs" : {
                  "VolumeType" : "gp2",
-                 "DeleteOnTermination" : false,
+                 "DeleteOnTermination" : true,
                  "VolumeSize" : "20"
                }
              }
@@ -40,6 +40,7 @@
 
     "WebappSecurityGroup":{
       "Type":"AWS::EC2::SecurityGroup",
+      "DeletionPolicy" : "Delete",
       "Properties":{
         "GroupName" : "csye6225-securitygroup",
         "GroupDescription":"Security Group for web server",
@@ -76,6 +77,7 @@
 
     "DBSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
+      "DeletionPolicy" : "Delete",
       "Properties" : {
         "GroupName":"csye6225-DBServerSecurityGroup",
         "GroupDescription" : "Enable TCP access via port 3306",
@@ -91,6 +93,7 @@
 
       "dbSubnetGroupId" : {
           "Type" : "AWS::RDS::DBSubnetGroup",
+          "DeletionPolicy" : "Delete",
           "Properties" : {
               "DBSubnetGroupDescription" : "Data Base Group Name to be assigned to ",
               "DBSubnetGroupName" : "DBsubnetGroup",
@@ -127,8 +130,8 @@
           }
       },
       "myDynamoDBTable" : {
-
         "Type" : "AWS::DynamoDB::Table",
+        "DeletionPolicy" : "Delete",
         "Properties" : {
         "TableName" :"csye6225",
           "AttributeDefinitions" : [
@@ -142,7 +145,6 @@
               "AttributeName" : "id",
               "KeyType" : "HASH"
             }
-
           ],
           "ProvisionedThroughput" : {
             "ReadCapacityUnits" : "5",
@@ -152,24 +154,7 @@
         }
     }
     
- },
-  "DBSecurityGroup" : {
-  "Type" : "AWS::EC2::SecurityGroup",
-  "Properties" : {
-  "GroupName":"csye6225-DBSecurityGroup",
-    "GroupDescription" : "Enable TCP access via port 3306",
-    "VpcId":{"Fn::ImportValue":{"Fn::Sub" : "${NetworkStackName}-vpcId"}},
-    "SecurityGroupIngress" : [ {
-      "IpProtocol" : "tcp",
-      "FromPort" : "3306",
-      "ToPort" : "3306",
-    "SourceSecurityGroupId" : {"Ref" : "WebappSecurityGroup"}
-
-     }
-   ]
-  }
-}
-
+ }
 
 
 }
