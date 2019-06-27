@@ -55,7 +55,7 @@
       },  
       "MyDBInstance": {
           "Type" : "AWS::RDS::DBInstance",
-          
+          "DeletionPolicy" : "Delete",
           "Properties" : {
               "Engine": "MySQL",
               "EngineVersion": "8.0.15",
