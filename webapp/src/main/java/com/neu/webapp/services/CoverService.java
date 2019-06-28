@@ -52,7 +52,7 @@ public class CoverService {
     @Bean
     private AmazonS3 setS3forProd() {
         s3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(new InstanceProfileCredentialsProvider(false))
+                .withRegion(Regions.US_EAST_1)
                 .build();
         List<Bucket> buckets = s3.listBuckets();
         for(Bucket bucket : buckets) {
