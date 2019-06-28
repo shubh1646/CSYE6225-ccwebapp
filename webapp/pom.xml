@@ -108,7 +108,7 @@
     </profiles>
 
     <build>
-        <finalName>ROOT</finalName>
+        <finalName>WEBAPP</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
