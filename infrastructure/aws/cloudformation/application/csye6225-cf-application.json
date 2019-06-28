@@ -24,7 +24,7 @@
     "WebappSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "csye6225-securitygroup",
+        "GroupName": "csye6225-WebappSecuritygroup",
         "GroupDescription": "Security Group for web server",
         "VpcId": {
           "Fn::ImportValue": {
@@ -48,6 +48,12 @@
             "IpProtocol": "tcp",
             "FromPort": "443",
             "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "ToPort": "8080",
             "CidrIp": "0.0.0.0/0"
           }
         ]
