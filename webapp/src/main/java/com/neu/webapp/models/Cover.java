@@ -26,4 +26,9 @@ public class Cover {
     public Cover(String url) {
         this.url = url;
     }
+
+    public Cover(UUID id, String url) {
+        this.id = id;
+        this.url = url;
+    }
 }

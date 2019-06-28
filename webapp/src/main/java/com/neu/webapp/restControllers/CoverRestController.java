@@ -29,7 +29,7 @@ public class CoverRestController {
         Book book = bookService.getBookById(idBook);
         if(book == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Book_ID\" }");
 
-        Cover cover = coverService.getCoverById(idImage);
+        Cover cover = coverService.getPresignedUrl(idImage);
         if(cover == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Image_ID\" }");
 
         return ResponseEntity.status(HttpStatus.OK).body(cover);
@@ -44,10 +44,8 @@ public class CoverRestController {
         if(book == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Book_ID\" }");
         if(bookService.isBookImagePresent(book)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Cover exist already perform PUT to modify\" }");
 
-
-        String path = request.getServletContext().getRealPath("/images/");
-
-        Cover cover = coverService.addCover(book, image, path);
+        String localPath = request.getServletContext().getRealPath("/images/");
+        Cover cover = coverService.addCover(book, image, localPath);
 
         return ResponseEntity.status(HttpStatus.OK).body(cover);
     }
@@ -64,9 +62,8 @@ public class CoverRestController {
         Cover cover = coverService.getCoverById(idImage);
         if(cover == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Image_ID\" }");
 
-        String path = request.getServletContext().getRealPath("/images/");
-
-        coverService.updateCover(book, cover, image, path);
+        String localPath = request.getServletContext().getRealPath("/images/");
+        coverService.updateCover(book, cover, image, localPath);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(cover);
     }
@@ -79,6 +76,7 @@ public class CoverRestController {
 
         Cover cover = coverService.getCoverById(idImage);
         if(cover == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Image_ID\" }");
+
         coverService.deleteCover(book, cover);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(cover);
