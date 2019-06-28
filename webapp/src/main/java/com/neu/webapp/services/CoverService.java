@@ -1,6 +1,7 @@
 package com.neu.webapp.services;
 
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.neu.webapp.models.Book;
@@ -29,9 +30,13 @@ public class CoverService {
     private static final String JPG = "image/jpg";
     private static final String PNG = "image/png";
 
+//    private static final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+//            .withCredentials(new ProfileCredentialsProvider())
+//            .withRegion("us-east-1")
+//            .build();
+
     private static final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-            .withCredentials(new ProfileCredentialsProvider())
-            .withRegion("us-east-1")
+            .withCredentials(new InstanceProfileCredentialsProvider(false))
             .build();
 
     private static String BUCKET_NAME = s3.listBuckets().get(0).getName();
