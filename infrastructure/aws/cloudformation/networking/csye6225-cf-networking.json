@@ -134,7 +134,9 @@
             "RouteTableId" : { "Ref" : "routeTableId" }
          }
       }
+
    },
+   
    "Outputs": {
       "vpcId": {
          "Description": "Vpc Id",
@@ -166,4 +168,5 @@
       }
    }
  }
- 
+
+

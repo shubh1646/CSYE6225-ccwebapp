@@ -29,12 +29,14 @@ public class CoverService {
     private static final String JPG = "image/jpg";
     private static final String PNG = "image/png";
 
-    private static String BUCKET_NAME = "csye6225-su19-sebastianc.me.csye6225.com";
-
     private static final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
             .withCredentials(new ProfileCredentialsProvider())
             .withRegion("us-east-1")
             .build();
+
+    private static String BUCKET_NAME = s3.listBuckets().get(0).getName();
+
+
 
     @Autowired
     private BookRepository bookRepository;
