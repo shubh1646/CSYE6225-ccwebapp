@@ -122,7 +122,8 @@ public class CoverService {
 
     public Cover addCover(Book book, MultipartFile imageFile, String localPath) throws Exception{
         String path = writeFile(imageFile, book.getId(), localPath);
-        book.setImage(new Cover(path));
+        Cover cover = new Cover(path);
+        book.setImage(cover);
         bookRepository.save(book);
         return book.getImage();
     }
