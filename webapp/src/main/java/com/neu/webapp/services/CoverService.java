@@ -2,13 +2,17 @@ package com.neu.webapp.services;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
 import com.neu.webapp.repositories.CoverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.amazonaws.services.s3.AmazonS3;
@@ -30,27 +35,32 @@ public class CoverService {
     private static final String JPG = "image/jpg";
     private static final String PNG = "image/png";
 
-//    private static final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-//            .withCredentials(new ProfileCredentialsProvider())
-//            .withRegion("us-east-1")
-//            .build();
-
-    private static final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-            .withCredentials(new InstanceProfileCredentialsProvider(false))
-            .build();
-
-    private static String BUCKET_NAME = s3.listBuckets().get(0).getName();
-
-
-
     @Autowired
     private BookRepository bookRepository;
 
     @Autowired
     private CoverRepository coverRepository;
 
-    @Autowired
-    private Environment env;
+    private static AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+//                .withCredentials(new InstanceProfileCredentialsProvider(false))
+                .build();
+
+    @Value("${bucket.name}")
+    private String BUCKET_NAME;
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+//    private static void setup() {
+////        s3 = AmazonS3ClientBuilder.standard()
+////                .withCredentials(new InstanceProfileCredentialsProvider(false))
+////                .build();
+//        List<Bucket> buckets = s3.listBuckets();
+//        for(Bucket bucket : buckets) {
+//            String bucketName =bucket.getName();
+//            if (bucketName.matches("^csye[a-z0-9A-Z\\.\\-]*.com$")) BUCKET_NAME = bucketName;
+//        }
+//    }
 
     public boolean isImagePresent(MultipartFile imageFile) {
         if(imageFile == null) return false;
@@ -63,8 +73,9 @@ public class CoverService {
     }
 
     public Cover getPresignedUrl(UUID id) {
+        System.out.println(this.activeProfile+"------"+BUCKET_NAME);
         Cover cover = getCoverById(id);
-        if(this.env.getActiveProfiles()[0].equals("prod")) {
+        if(activeProfile.equals("prod")) {
             try {
                 java.util.Date expiration = new java.util.Date();
                 long expTimeMillis = expiration.getTime();
@@ -100,7 +111,7 @@ public class CoverService {
     }
 
     public String writeFile(MultipartFile imageFile, UUID id, String localPath) throws Exception{
-        if(this.env.getActiveProfiles()[0].equals("prod")) {
+        if(activeProfile.equals("prod")) {
             String fileName = id+"-"+imageFile.getOriginalFilename();
             File file = multipartToFile(imageFile, fileName);
             try {
@@ -134,7 +145,7 @@ public class CoverService {
     }
 
     public void deleteFile(String fileName) throws Exception {
-        if(this.env.getActiveProfiles()[0].equals("prod")) {
+        if(activeProfile.equals("prod")) {
             try {
                 s3.deleteObject(BUCKET_NAME, fileName);
             }catch (AmazonServiceException e) {
