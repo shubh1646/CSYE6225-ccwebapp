@@ -86,7 +86,9 @@
           "IpProtocol" : "tcp",
           "FromPort" : "3306",
           "ToPort" : "3306",
-          "SourceSecurityGroupId" : {"Ref" : "WebappSecurityGroup"}
+          "SourceSecurityGroupId" : {
+            "Fn::GetAtt" : [ "WebappSecurityGroup", "GroupId" ]
+          }
         }]
       }
     },
