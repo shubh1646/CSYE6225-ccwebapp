@@ -1,11 +1,7 @@
 package com.neu.webapp.services;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.neu.webapp.models.Book;
@@ -16,21 +12,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
+import java.net.URL;
 
-public interface CoverService {
-    public String JPEG = "image/jpeg";
-    public String JPG = "image/jpg";
-    public String PNG = "image/png";
+@Service
+@Profile("dev")
+public class CoverServiceDev {
+    private static final String JPEG = "image/jpeg";
+    private static final String JPG = "image/jpg";
+    private static final String PNG = "image/png";
 
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private CoverRepository coverRepository;
+
+    private static AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+//                .withCredentials(new InstanceProfileCredentialsProvider(false))
+                .build();
+
+    @Value("${bucket.name}")
+    private String BUCKET_NAME;
 
     @Value("${spring.profiles.active}")
     private String activeProfile;

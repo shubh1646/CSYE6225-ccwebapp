@@ -2,14 +2,12 @@ package com.neu.webapp.services;
 
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
-import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,7 +15,7 @@ import java.util.UUID;
 @Service
 public class BookService {
     @Autowired
-    private CoverService coverService;
+    private CoverServiceDev coverService;
 
     @Autowired
     private BookRepository bookRepository;

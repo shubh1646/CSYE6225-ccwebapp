@@ -2,9 +2,8 @@ package com.neu.webapp.restControllers;
 
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
-import com.neu.webapp.models.Cover;
 import com.neu.webapp.services.BookService;
-import com.neu.webapp.services.CoverService;
+import com.neu.webapp.services.CoverServiceDev;
 import com.neu.webapp.validators.BookValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.UUID;
@@ -21,7 +19,7 @@ import java.util.UUID;
 @RequestMapping("/book")
 public class BookRestController {
     @Autowired
-    private CoverService coverService;
+    private CoverServiceDev coverService;
 
     @Autowired
     private BookService bookService;
