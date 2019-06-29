@@ -1,7 +1,6 @@
 package com.neu.webapp.services;
 
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -11,16 +10,12 @@ import com.neu.webapp.repositories.BookRepository;
 import com.neu.webapp.repositories.CoverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.amazonaws.services.s3.AmazonS3;
@@ -51,26 +46,26 @@ public class CoverService {
     @Value("${spring.profiles.active}")
     private String activeProfile;
 
-    @Profile("prod")
-    @Bean
-    private AmazonS3 setS3forProd() {
-        s3 = AmazonS3ClientBuilder.standard()
-                .withRegion(Regions.US_EAST_1)
-                .build();
-        List<Bucket> buckets = s3.listBuckets();
-        for(Bucket bucket : buckets) {
-            String bucketName =bucket.getName();
-            if (bucketName.matches("^csye[a-z0-9A-Z\\.\\-]*.com$")) BUCKET_NAME = bucketName;
-        }
-        return s3;
-    }
-
-    @Profile("dev")
-    @Bean
-    private AmazonS3 setS3forDev() {
-        s3 = AmazonS3ClientBuilder.defaultClient();
-        return s3;
-    }
+//    @Profile("prod")
+//    @Bean
+//    private AmazonS3 setS3forProd() {
+//        s3 = AmazonS3ClientBuilder.standard()
+//                .withRegion(Regions.US_EAST_1)
+//                .build();
+//        List<Bucket> buckets = s3.listBuckets();
+//        for(Bucket bucket : buckets) {
+//            String bucketName =bucket.getName();
+//            if (bucketName.matches("^csye[a-z0-9A-Z\\.\\-]*.com$")) BUCKET_NAME = bucketName;
+//        }
+//        return s3;
+//    }
+//
+//    @Profile("dev")
+//    @Bean
+//    private AmazonS3 setS3forDev() {
+//        s3 = AmazonS3ClientBuilder.defaultClient();
+//        return s3;
+//    }
 
     public boolean isImagePresent(MultipartFile imageFile) {
         if(imageFile == null) return false;
