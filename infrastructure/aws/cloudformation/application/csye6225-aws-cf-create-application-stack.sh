@@ -38,7 +38,7 @@ status=$(aws cloudformation create-stack --stack-name $applicationStackName \
 --parameters \
 ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
---on-failure DELETE)
+--capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]
 then
