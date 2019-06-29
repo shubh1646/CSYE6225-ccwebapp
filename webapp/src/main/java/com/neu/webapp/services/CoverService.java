@@ -2,6 +2,7 @@ package com.neu.webapp.services;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.neu.webapp.models.Book;
@@ -9,6 +10,7 @@ import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
 import com.neu.webapp.repositories.CoverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
@@ -39,35 +41,26 @@ public class CoverService {
     @Autowired
     private CoverRepository coverRepository;
 
-    @Autowired
-    private Environment env;
-
-    @Autowired
-    private static AmazonS3 s3;
-
-    private static String BUCKET_NAME;
-
-
-    @Profile("prod")
-    @Bean
-    private AmazonS3 setS3forProd() {
-        s3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(new InstanceProfileCredentialsProvider(false))
+    private static AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+//                .withCredentials(new InstanceProfileCredentialsProvider(false))
                 .build();
-        List<Bucket> buckets = s3.listBuckets();
-        for(Bucket bucket : buckets) {
-            String bucketName =bucket.getName();
-            if (bucketName.matches("^csye[a-z0-9A-Z\\.\\-]*.com$")) BUCKET_NAME = bucketName;
-        }
-        return s3;
-    }
 
-    @Profile("dev")
-    @Bean
-    private AmazonS3 setS3forDev() {
-        s3 = AmazonS3ClientBuilder.defaultClient();
-        return s3;
-    }
+    @Value("${bucket.name}")
+    private String BUCKET_NAME;
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+//    private static void setup() {
+////        s3 = AmazonS3ClientBuilder.standard()
+////                .withCredentials(new InstanceProfileCredentialsProvider(false))
+////                .build();
+//        List<Bucket> buckets = s3.listBuckets();
+//        for(Bucket bucket : buckets) {
+//            String bucketName =bucket.getName();
+//            if (bucketName.matches("^csye[a-z0-9A-Z\\.\\-]*.com$")) BUCKET_NAME = bucketName;
+//        }
+//    }
 
     public boolean isImagePresent(MultipartFile imageFile) {
         if(imageFile == null) return false;
@@ -80,8 +73,9 @@ public class CoverService {
     }
 
     public Cover getPresignedUrl(UUID id) {
+        System.out.println(this.activeProfile+"------"+BUCKET_NAME);
         Cover cover = getCoverById(id);
-        if(this.env.getActiveProfiles()[0].equals("prod")) {
+        if(activeProfile.equals("prod")) {
             try {
                 java.util.Date expiration = new java.util.Date();
                 long expTimeMillis = expiration.getTime();
@@ -117,7 +111,7 @@ public class CoverService {
     }
 
     public String writeFile(MultipartFile imageFile, UUID id, String localPath) throws Exception{
-        if(this.env.getActiveProfiles()[0].equals("prod")) {
+        if(activeProfile.equals("prod")) {
             String fileName = id+"-"+imageFile.getOriginalFilename();
             File file = multipartToFile(imageFile, fileName);
             try {
@@ -151,7 +145,7 @@ public class CoverService {
     }
 
     public void deleteFile(String fileName) throws Exception {
-        if(this.env.getActiveProfiles()[0].equals("prod")) {
+        if(activeProfile.equals("prod")) {
             try {
                 s3.deleteObject(BUCKET_NAME, fileName);
             }catch (AmazonServiceException e) {
