@@ -3,7 +3,7 @@ package com.neu.webapp.restControllers;
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
-import com.neu.webapp.services.CoverServiceDev;
+import com.neu.webapp.services.CoverService;
 import com.neu.webapp.validators.BookValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +18,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/book")
 public class BookRestController {
-    @Autowired
-    private CoverServiceDev coverService;
-
     @Autowired
     private BookService bookService;
 

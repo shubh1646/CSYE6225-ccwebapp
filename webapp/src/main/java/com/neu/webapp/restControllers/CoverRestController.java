@@ -3,7 +3,7 @@ package com.neu.webapp.restControllers;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.models.Cover;
 import com.neu.webapp.services.BookService;
-import com.neu.webapp.services.CoverServiceDev;
+import com.neu.webapp.services.CoverService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class CoverRestController {
     private BookService bookService;
 
     @Autowired
-    private CoverServiceDev coverService;
+    private CoverService coverService;
 
     @GetMapping("/{idImage}")
     public ResponseEntity<?> getBookCover(@PathVariable UUID idBook, @PathVariable UUID idImage) throws Exception{
