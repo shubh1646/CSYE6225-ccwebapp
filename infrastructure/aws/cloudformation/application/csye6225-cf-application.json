@@ -6,7 +6,7 @@
       "Description": "Web-Application Network Stack Name",
       "Type": "String"
     },
-    "appIAM": {
+    "applicationIAMStackName": {
       "Description": "Web-Application IAM Stack Name",
       "Type": "String"
     },
@@ -21,7 +21,7 @@
       "Properties": {
         "Roles": [ {
           "Fn::ImportValue": {
-            "Fn::Sub": "${appIAM}-ec2RoleId"
+            "Fn::Sub": "${applicationIAMStackName}-ec2RoleId"
           }
       } ],
         "InstanceProfileName": "ec2InstanceProfile"
