@@ -1,0 +1,68 @@
+{
+   "AWSTemplateFormatVersion" : "2010-09-09",
+   "Description" : "AWS CloudFormation Template for a Networking stack with 1-VPC, 3-Subnets, 1-IGW, 1-RT",
+   "Parameters": {
+      "bucketName": {
+         "Type": "String",
+         "AllowedValues": [
+            "csye6225-su19-sebastianc.me.csye6225.com",
+            "csye6225-su19-gandhiman.me.csye6225.com",
+            "csye6225-su19-sharmashubh.me.csye6225.com"
+         ],
+         "Description": "S3 BUcket Name for which restrictions are to be maintained"
+      }
+   },
+   "Resources": {
+      "ec2RoleId": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": {
+                     "Service": ["ec2.amazonaws.com"]
+                  },
+                  "Action": ["sts:AssumeRole"]
+               }]
+            },
+            "Path": "/",
+            "RoleName": "EC2-Webapp_Role",
+            "Tags" : [ { 
+               "Key" : "Name",
+               "Value" : { "Fn::Sub": "${AWS::StackName}-WebServer-Role" } 
+            } ]
+         }
+      },
+     "s3BucketCrudPolicyId": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "Properties" : {
+         "ManagedPolicyName" : "EC2-S3_Access_ManagedPolicy",
+         "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [
+               {
+                     "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
+                     "Effect": "Allow",
+                     "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+                     "Resource": { 
+                        "Fn::Sub" : "arn:aws:s3:::${bucketName}/*" 
+                     }
+               }
+            ]
+         },
+         "Roles": [{ "Ref": "ec2RoleId" }]
+      }
+    }
+   },
+   "Outputs": {
+      "ec2RoleId": {
+         "Description": "EC2 Role ID",
+         "Value": { "Ref": "ec2RoleId" },
+         "Export": {
+            "Name": { "Fn::Sub": "${AWS::StackName}-ec2RoleId" }
+         }
+      }
+   }
+ }
+
+

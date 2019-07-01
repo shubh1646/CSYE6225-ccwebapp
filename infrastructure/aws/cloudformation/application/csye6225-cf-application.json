@@ -84,6 +84,7 @@
     "MyEC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
+        "DisableApiTermination": false,
         "ImageId": {
           "Ref": "amiId"
         },
