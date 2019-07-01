@@ -6,6 +6,10 @@
       "Description": "Web-Application Network Stack Name",
       "Type": "String"
     },
+    "appIAM": {
+      "Description": "Web-Application IAM Stack Name",
+      "Type": "String"
+    },
     "amiId": {
       "Description": "Image-ID of created Centos",
       "Type": "String"
@@ -15,9 +19,11 @@
     "ec2InstanceProfileId": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "Roles": [
-          "S3Access-EC2"
-        ],
+        "Roles": [ {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${appIAM}-ec2RoleId"
+          }
+      } ],
         "InstanceProfileName": "ec2InstanceProfile"
       }
     },
