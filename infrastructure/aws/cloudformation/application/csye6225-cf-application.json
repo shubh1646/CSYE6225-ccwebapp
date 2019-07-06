@@ -92,6 +92,18 @@
         "IamInstanceProfile": {
           "Ref": "ec2InstanceProfileId"
         },
+
+        "Tags" : [
+
+          {  "Key" : "webserver",
+              "Value" : "production"
+
+
+          }
+        ],
+
+
+
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": true,
