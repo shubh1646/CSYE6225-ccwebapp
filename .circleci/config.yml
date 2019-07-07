@@ -53,24 +53,16 @@ version: 2
           name : Upload Artifact To S3
           command : | 
                  
-                  #cd codedeploy_artifact
-                 # aws s3 cp csye6225-web-app-${CIRCLE_BUILD_NUM}.zip s3://${bucketName}
                   echo "Uploading to S3 bucket"
                   cd codedeploy_artifact
-                  # aws s3api put-object --bucket ${AWS_CODE_DEPLOY_BUCKET} \
-                  # --key csye6225-webapp-${CIRCLE_BUILD_NUM} \
-                  # --body codedeploy_artifact/csye6225-web-app-${CIRCLE_BUILD_NUM}.zip
-                  aws deploy create-application --application-name csye6225-webapp \
-                  --compute-platform Server
-                  aws deploy push --application-name csye6225-webapp \
-                  --s3-location s3://code-deploy.${AWS_CODE_DEPLOY_BUCKET}/csye6225-webapp-${CIRCLE_BUILD_NUM}.zip \
-                  --ignore-hidden-files
+                  aws s3 cp csye6225-web-app-${CIRCLE_BUILD_NUM}.zip s3://${bucketName}
+                  
+                 
+                 
       -run :
           name : Make CodeDeploy API call 
           command : |
                 echo "CodeDeploy"
-                aws configure list
-                aws configure set region us-east-1
                 aws deploy create-deployment --application-name ${applicationName} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${groupName} --s3-location bucket=${bucketName},bundleType=zip,key=csye6225-web-app-${CIRCLE_BUILD_NUM}.zip
 
            
