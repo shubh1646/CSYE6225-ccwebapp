@@ -9,18 +9,13 @@
     "amiId": {
       "Description": "Image-ID of created Centos",
       "Type": "String"
+    },
+    "CircleCIStackName": {
+      "Description": "CircleCI Roles and Policies Stack Name",
+      "Type": "String"
     }
   },
   "Resources": {
-    "ec2InstanceProfileId": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Roles": [
-          "S3Access-EC2"
-        ],
-        "InstanceProfileName": "ec2InstanceProfile"
-      }
-    },
     "WebappSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -81,45 +76,6 @@
         ]
       }
     },
-    "MyEC2Instance": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "ImageId": {
-          "Ref": "amiId"
-        },
-        "InstanceType": "t2.micro",
-        "KeyName": "csye6225",
-        "IamInstanceProfile": {
-          "Ref": "ec2InstanceProfileId"
-        },
-        "NetworkInterfaces": [
-          {
-            "AssociatePublicIpAddress": true,
-            "SubnetId": {
-              "Fn::ImportValue": {
-                "Fn::Sub": "${NetworkStackName}-subnet1Id"
-              }
-            },
-            "DeviceIndex": "0",
-            "GroupSet": [
-              {
-                "Ref": "WebappSecurityGroup"
-              }
-            ]
-          }
-        ],
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/sda1",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "DeleteOnTermination": true,
-              "VolumeSize": "20"
-            }
-          }
-        ]
-      }
-    },
     "dbSubnetGroupId": {
       "Type": "AWS::RDS::DBSubnetGroup",
       "Properties": {
@@ -139,13 +95,13 @@
         ]
       }
     },
-    "MyDBInstance": {
+    "rdsInstanceId": {
       "Type": "AWS::RDS::DBInstance",
       "DeletionPolicy": "Delete",
       "Properties": {
         "AllocatedStorage": "20",
         "Engine": "mysql",
-        "EngineVersion": "8.0.15",
+        "EngineVersion": "5.6.35",
         "DBInstanceClass": "db.t2.micro",
         "MultiAZ": false,
         "DBInstanceIdentifier": "csye6225-su19",
@@ -164,7 +120,80 @@
         "Port": "3306"
       }
     },
-    "myDynamoDBTable": {
+    "ec2InstanceProfileId": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }
+        ],
+        "InstanceProfileName": "ec2InstanceProfile"
+      }
+    },
+    "ec2InstanceId": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "DisableApiTermination": false,
+        "ImageId": { "Ref": "amiId" },
+        "InstanceType": "t2.micro",
+        "KeyName": "csye6225",
+        "IamInstanceProfile": {
+          "Ref": "ec2InstanceProfileId"
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "SubnetId": { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"} },
+            "DeviceIndex": "0",
+            "GroupSet": [ {"Ref": "WebappSecurityGroup"} ]
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": true,
+              "VolumeSize": "20"
+            }
+          }
+        ],
+        "UserData" : {
+
+          "Fn::Base64" : {
+            "Fn::Join" : [ "", [
+              "#!/bin/bash\n",
+              "sudo systemctl stop tomcat\n",
+              "echo \"#!/bin/sh\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"\nJAVA_OPTS=\\$JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"if [ -z \\\"\\$JAVA_OPTS\\\" ]\nthen\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"\tJAVA_OPTS=\\\"-DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"else\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"\tJAVA_OPTS=\\\"\\${JAVA_OPTS} -DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"fi\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"JAVA_OPTS=\\\"\\${JAVA_OPTS} -Ddomain=",{"Fn::GetAtt": ["rdsInstanceId", "Endpoint.Address"]},
+              " -Ddatabase=csye6225 -DsqlUsername=csye6225master -DsqlPassword=csye6225password",
+              " -Dbucket=", { "Fn::ImportValue" : {"Fn::Sub": "${CircleCIStackName}-s3BucketId" } },
+              "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+              "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
+              "sudo systemctl start tomcat"
+            ]
+            ]
+          }
+        },
+        "Tags" : [
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployServiceRole" }
+          },
+          {
+            "Key" : "Application Role",
+            "Value" : "Web Server"
+          }
+        ]
+      }
+    },
+    "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "TableName": "csye6225",
@@ -186,5 +215,8 @@
         }
       }
     }
+  },
+  "Outputs": {
+
   }
 }

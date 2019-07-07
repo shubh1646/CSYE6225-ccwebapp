@@ -4,10 +4,20 @@ echo "enter the name for your Application Stack(alphanumeric)"
 read applicationStackName
 echo "enter the name of your Virtual Private Cloud (networking) stack(alphanumeric)"
 read NetworkStackName
+echo "enter the name of your CircleCI Roles and Policies stack(alphanumeric)"
+read CircleCIStackName
 
-if [ -z "$applicationStackName" ] || [ -z "$NetworkStackName" ]
+if [ -z "$applicationStackName" ] || [ -z "$NetworkStackName" ] || [ -z "$CircleCIStackName" ]
 then
-    echo "Failed: Enter a valid name for both application stack and networking stack"
+    echo "Failed: either Application Stack Name or Networking Stack Name or CircleCI Stack Name Null"
+    exit
+fi
+
+echo "enter the ami id"
+read amiId
+if [ -z "$amiId" ]
+then
+    echo "Failed: entered amiId is Null"
     exit
 fi
 
@@ -23,21 +33,20 @@ then
    echo "Failed: Your Virtual Private Cloud Stack not setup"
    exit
 fi
-
-
-echo "enter the ami id"
-read amiId
-if [ -z "amiId" ]
+aws cloudformation describe-stacks --stack-name $CircleCIStackName &> /dev/null
+if [ $? -ne 0 ]
 then
-    echo "Failed: enter a Ami Id"
-    exit
+   echo "Failed: Your CircleCI Stack not setup"
+   exit
 fi
+
 
 status=$(aws cloudformation create-stack --stack-name $applicationStackName \
 --template-body file://csye6225-cf-application.json \
 --parameters \
 ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
+ParameterKey=CircleCIStackName,ParameterValue=$CircleCIStackName \
 --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]
