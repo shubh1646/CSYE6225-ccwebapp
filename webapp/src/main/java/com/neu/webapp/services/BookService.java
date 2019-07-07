@@ -39,6 +39,7 @@ public class BookService {
         if (book.getIsbn() != null)  upBook.setIsbn(book.getIsbn());
         if (book.getTitle() != null) upBook.setTitle(book.getTitle());
         if (book.getQuantity() != null) upBook.setQuantity(book.getQuantity());
+        if (book.getImage() != null && !book.equals(upBook)) upBook.setImage(book.getImage());
 
         bookRepository.save(upBook);
     }
