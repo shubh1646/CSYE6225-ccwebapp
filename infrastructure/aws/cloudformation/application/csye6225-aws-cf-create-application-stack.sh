@@ -4,8 +4,10 @@ echo "enter the name for your Application Stack(alphanumeric)"
 read applicationStackName
 echo "enter the name of your Virtual Private Cloud (networking) stack(alphanumeric)"
 read NetworkStackName
+echo "enter the name of your Application Roles and Policies stack(alphanumeric)"
+read applicationIAMStackName
 
-if [ -z "$applicationStackName" ] || [ -z "$NetworkStackName" ]
+if [ -z "$applicationStackName" ] || [ -z "$NetworkStackName" ] || [ -z "$applicationIAMStackName" ]
 then
     echo "Failed: Enter a valid name for both application stack and networking stack"
     exit
@@ -38,6 +40,7 @@ status=$(aws cloudformation create-stack --stack-name $applicationStackName \
 --parameters \
 ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
+ParameterKey=applicationIAMStackName,ParameterValue=$applicationIAMStackName \
 --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]
