@@ -46,7 +46,11 @@ status=$(aws cloudformation create-stack --stack-name $applicationStackName \
 --parameters \
 ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
+<<<<<<< HEAD
 ParameterKey=CircleCIStackName,ParameterValue=$CircleCIStackName \
+=======
+ParameterKey=applicationIAMStackName,ParameterValue=$applicationIAMStackName \
+>>>>>>> 948350f9361891331c2dd7ad5950d987997049bb
 --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]

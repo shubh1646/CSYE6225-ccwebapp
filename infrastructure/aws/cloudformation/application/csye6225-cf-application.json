@@ -6,6 +6,10 @@
       "Description": "Web-Application Network Stack Name",
       "Type": "String"
     },
+    "applicationIAMStackName": {
+      "Description": "Web-Application IAM Stack Name",
+      "Type": "String"
+    },
     "amiId": {
       "Description": "Image-ID of created Centos",
       "Type": "String"
@@ -16,6 +20,17 @@
     }
   },
   "Resources": {
+    "ec2InstanceProfileId": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [ {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${applicationIAMStackName}-ec2RoleId"
+          }
+      } ],
+        "InstanceProfileName": "ec2InstanceProfile"
+      }
+    },
     "WebappSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -71,6 +86,46 @@
             "ToPort": "3306",
             "SourceSecurityGroupId": {
               "Fn::GetAtt": [ "WebappSecurityGroup", "GroupId" ]
+            }
+          }
+        ]
+      }
+    },
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "DisableApiTermination": false,
+        "ImageId": {
+          "Ref": "amiId"
+        },
+        "InstanceType": "t2.micro",
+        "KeyName": "csye6225",
+        "IamInstanceProfile": {
+          "Ref": "ec2InstanceProfileId"
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "SubnetId": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${NetworkStackName}-subnet1Id"
+              }
+            },
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "WebappSecurityGroup"
+              }
+            ]
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": true,
+              "VolumeSize": "20"
             }
           }
         ]
