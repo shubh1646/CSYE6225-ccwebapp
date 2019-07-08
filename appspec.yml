@@ -12,6 +12,10 @@ files:
   - source: ./applicationStart.sh
     destination: /home/centos
 hooks:
+  ApplicationStop:
+    - location: ./applicationStop.sh
+      timeout: 180
+      runas: centos
   BeforeInstall:
     - location: ./beforeInstall.sh
       timeout: 180

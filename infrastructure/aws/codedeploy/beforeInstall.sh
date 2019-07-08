@@ -1,5 +1,5 @@
 #!/bin/bash
 
-#navigating into tomcat webapps folder
-sudo systemctl stop tomcat
-sudo systemctl status tomcat
+#stoping tomcat
+sudo systemctl stop tomcat.service
+# sudo systemctl status tomcat.service
