@@ -220,7 +220,8 @@
               "Effect": "Allow",
               "Action": [
                 "codedeploy:RegisterApplicationRevision",
-                "codedeploy:GetApplicationRevision"
+                "codedeploy:GetApplicationRevision",
+                "codedeploy:ListApplicationRevisions"
               ],
               "Resource": [ {
                   "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${applicationId}"
