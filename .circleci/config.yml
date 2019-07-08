@@ -42,7 +42,7 @@ jobs:
           name : Install pip
           command: |
             #sudo rm /etc/apt/sources.list
-            #sudo apt-get clean
+            sudo apt clean
             sudo apt update
             echo "Success"
             #sudo apt install python3
