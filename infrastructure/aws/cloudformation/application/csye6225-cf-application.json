@@ -6,10 +6,6 @@
       "Description": "Web-Application Network Stack Name",
       "Type": "String"
     },
-    "applicationIAMStackName": {
-      "Description": "Web-Application IAM Stack Name",
-      "Type": "String"
-    },
     "amiId": {
       "Description": "Image-ID of created Centos",
       "Type": "String"
@@ -20,17 +16,6 @@
     }
   },
   "Resources": {
-    "ec2InstanceProfileId": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Roles": [ {
-          "Fn::ImportValue": {
-            "Fn::Sub": "${applicationIAMStackName}-ec2RoleId"
-          }
-      } ],
-        "InstanceProfileName": "ec2InstanceProfile"
-      }
-    },
     "WebappSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -91,46 +76,6 @@
         ]
       }
     },
-    "MyEC2Instance": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "DisableApiTermination": false,
-        "ImageId": {
-          "Ref": "amiId"
-        },
-        "InstanceType": "t2.micro",
-        "KeyName": "csye6225",
-        "IamInstanceProfile": {
-          "Ref": "ec2InstanceProfileId"
-        },
-        "NetworkInterfaces": [
-          {
-            "AssociatePublicIpAddress": true,
-            "SubnetId": {
-              "Fn::ImportValue": {
-                "Fn::Sub": "${NetworkStackName}-subnet1Id"
-              }
-            },
-            "DeviceIndex": "0",
-            "GroupSet": [
-              {
-                "Ref": "WebappSecurityGroup"
-              }
-            ]
-          }
-        ],
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/sda1",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "DeleteOnTermination": true,
-              "VolumeSize": "20"
-            }
-          }
-        ]
-      }
-    },
     "dbSubnetGroupId": {
       "Type": "AWS::RDS::DBSubnetGroup",
       "Properties": {
@@ -178,7 +123,7 @@
     "ec2InstanceProfileId": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "Roles": [
+        "Roles": [ 
           { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }
         ],
         "InstanceProfileName": "ec2InstanceProfile"
@@ -200,7 +145,7 @@
             "SubnetId": { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"} },
             "DeviceIndex": "0",
             "GroupSet": [ {"Ref": "WebappSecurityGroup"} ]
-          }
+          } 
         ],
         "BlockDeviceMappings": [
           {
@@ -216,30 +161,30 @@
 
           "Fn::Base64" : {
             "Fn::Join" : [ "", [
-              "#!/bin/bash\n",
-              "sudo systemctl stop tomcat\n",
-              "echo \"#!/bin/sh\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"\nJAVA_OPTS=\\$JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"if [ -z \\\"\\$JAVA_OPTS\\\" ]\nthen\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"\tJAVA_OPTS=\\\"-DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"else\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"\tJAVA_OPTS=\\\"\\${JAVA_OPTS} -DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"fi\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"JAVA_OPTS=\\\"\\${JAVA_OPTS} -Ddomain=",{"Fn::GetAtt": ["rdsInstanceId", "Endpoint.Address"]},
-              " -Ddatabase=csye6225 -DsqlUsername=csye6225master -DsqlPassword=csye6225password",
-              " -Dbucket=", { "Fn::ImportValue" : {"Fn::Sub": "${CircleCIStackName}-s3BucketId" } },
-              "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
-              "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
-              "sudo systemctl start tomcat"
-            ]
+                "#!/bin/bash\n",
+                "sudo systemctl stop tomcat\n",
+                "echo \"#!/bin/sh\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"\nJAVA_OPTS=\\$JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"if [ -z \\\"\\$JAVA_OPTS\\\" ]\nthen\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"\tJAVA_OPTS=\\\"-DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"else\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"\tJAVA_OPTS=\\\"\\${JAVA_OPTS} -DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"fi\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"JAVA_OPTS=\\\"\\${JAVA_OPTS} -Ddomain=",{"Fn::GetAtt": ["rdsInstanceId", "Endpoint.Address"]},
+                " -Ddatabase=csye6225 -DsqlUsername=csye6225master -DsqlPassword=csye6225password",
+                " -Dbucket=", { "Fn::ImportValue" : {"Fn::Sub": "${CircleCIStackName}-s3BucketId" } },
+                "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
+                "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+                "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
+                "sudo systemctl start tomcat"
+              ]
             ]
           }
         },
-        "Tags" : [
-          {
+        "Tags" : [ 
+          { 
             "Key" : "Name",
-            "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployServiceRole" }
+            "Value" : { "Fn::Sub": "${AWS::StackName}-WebServer" } 
           },
           {
             "Key" : "Application Role",
