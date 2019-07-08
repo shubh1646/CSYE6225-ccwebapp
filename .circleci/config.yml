@@ -1,11 +1,7 @@
-version: 2.1
+version: 2
 jobs:
   build:
     working_directory: ~/webapp
-    filters:
-      branches:
-        only:
-          - assign5
     docker:
       - image: circleci/openjdk:11-jdk
     steps:
@@ -13,6 +9,7 @@ jobs:
       - run:
           name: Build WAR
           command: |
+            pwd
             ./mvnw clean install
             cd target
             ls -al
