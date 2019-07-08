@@ -60,10 +60,10 @@ jobs:
             aws deploy register-application-revision --region ${AWS_REGION} --application-name csye6225-webapp \
             --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip
             echo "------------------------------------------------------"
-            aws deploy list-application-revisions --region us-east-1 --application-name csye6225-webapp \
+            aws deploy list-application-revisions --region ${AWS_REGION} --application-name csye6225-webapp \
             --s-3-bucket code-deploy.csye6225-su19-sebastianc.me --deployed exclude
             echo "------------------------------------------------------"
-            deploymentId=$(aws deploy create-deployment \
+            deploymentId=$(aws deploy create-deployment --region ${AWS_REGION} \
             --application-name csye6225-webapp \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --deployment-group-name csye6225-webapp-deployment \
