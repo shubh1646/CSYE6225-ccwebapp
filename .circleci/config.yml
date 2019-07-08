@@ -12,7 +12,7 @@ jobs:
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA8CACC073C3DB2A
             echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
             sudo apt-get update
-            sudo apt-get install oracle-java11-installer
+            sudo apt-get install oracle-java11-installer-local
             sudo apt-get install oracle-java11-set-default
             jdkVersion=$(ls | grep jdk*)
             sudo echo -e "JAVA_HOME=\"/usr/lib/jvm/$jdkVersion\"" >> /etc/bash.bashrc
