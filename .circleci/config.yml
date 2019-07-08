@@ -59,15 +59,15 @@ jobs:
             echo "$AWS_REGION"
             aws deploy register-application-revision --region ${AWS_REGION} --application-name csye6225-webapp \
             --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip
-            # echo "------------------------------------------------------"
-            # aws deploy list-application-revisions --application-name csye6225-webapp \
-            # --s-3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
-            # echo "------------------------------------------------------"
-            # deploymentId=$(aws deploy create-deployment \
-            # --application-name csye6225-webapp \
-            # --deployment-config-name CodeDeployDefault.AllAtOnce \
-            # --deployment-group-name csye6225-webapp-deployment \
-            # --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip \
-            # --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
-            # echo "$deploymentId"
+            echo "------------------------------------------------------"
+            aws deploy list-application-revisions --region ${AWS_REGION} --application-name csye6225-webapp \
+            --s-3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
+            echo "------------------------------------------------------"
+            deploymentId=$(aws deploy create-deployment \
+            --application-name csye6225-webapp \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name csye6225-webapp-deployment \
+            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip \
+            --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
+            echo "$deploymentId"
               
