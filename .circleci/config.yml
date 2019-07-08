@@ -2,34 +2,34 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.8-jessie
+      - image: circleci/openjdk:11-jdk-stretch
     steps:
       - checkout
-      - run:
-          name: JAVA 11 installation
-          command: |
-            sudo apt install dirmngr
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA8CACC073C3DB2A
-            echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
-            # sudo apt-get update
-            # sudo apt-get install oracle-java11-installer-local
-            # sudo apt-get install oracle-java11-set-default
-            echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 73C3DB2A
-            sudo apt update
-            sudo apt install oracle-java11-set-default-local
-            jdkVersion=$(ls | grep jdk*)
-            sudo echo -e "JAVA_HOME=\"/usr/lib/jvm/$jdkVersion\"" >> /etc/bash.bashrc
-            sudo echo -e "PATH=\"$JAVA_HOME/bin:$PATH\"" >> /etc/bash.bashrc
-            sudo echo "export PATH" >> /etc/bash.bashrc
-      - run:
-          name: Install packages
-          command: |
-            echo $CIRCLE_WORKING_DIRECTORY
-            sudo apt-get update && sudo apt-get install wget zip unzip -y
-      - run:
-          name: Install awscli
-          command: sudo pip install awscli
+      # - run:
+      #     name: JAVA 11 installation
+      #     command: |
+      #       sudo apt install dirmngr
+      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA8CACC073C3DB2A
+      #       echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
+      #       # sudo apt-get update
+      #       # sudo apt-get install oracle-java11-installer-local
+      #       # sudo apt-get install oracle-java11-set-default
+      #       echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
+      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 73C3DB2A
+      #       sudo apt update
+      #       sudo apt install oracle-java11-set-default-local
+      #       jdkVersion=$(ls | grep jdk*)
+      #       sudo echo -e "JAVA_HOME=\"/usr/lib/jvm/$jdkVersion\"" >> /etc/bash.bashrc
+      #       sudo echo -e "PATH=\"$JAVA_HOME/bin:$PATH\"" >> /etc/bash.bashrc
+      #       sudo echo "export PATH" >> /etc/bash.bashrc
+      # - run:
+      #     name: Install packages
+      #     command: |
+      #       echo $CIRCLE_WORKING_DIRECTORY
+      #       sudo apt-get update && sudo apt-get install wget zip unzip -y
+      # - run:
+      #     name: Install awscli
+      #     command: sudo pip install awscli
       - run:
           name: Build WAR
           command: |
@@ -63,24 +63,24 @@ jobs:
             cd ..
             pwd
             ls -al
-      # - run :
-      #     name : Install pip
-      #     command: |
-      #       sudo rm /etc/apt/sources.list
-      #       echo "deb http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
-      #       echo "deb-src http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
-      #       echo "Acquire::Check-Valid-Until false;" | sudo tee -a /etc/apt/apt.conf.d/10-nocheckvalid
-      #       echo 'Package: *\nPin: origin "archive.debian.org"\nPin-Priority: 500' | sudo tee -a /etc/apt/preferences.d/10-archive-pin
-      #       sudo apt-get update
-      #       echo "Success"
-      #       sudo apt-get install python3
-      #       python3 --version
-      #       apt-get update
-      #       sudo apt-get install python3-pip
-      #       pip3 --version
-      # - run :
-      #     name  :   AWS CLI Install 
-      #     command :  sudo pip3 install -y awscli
+      - run :
+          name : Install pip
+          command: |
+            sudo rm /etc/apt/sources.list
+            echo "deb http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
+            echo "deb-src http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
+            echo "Acquire::Check-Valid-Until false;" | sudo tee -a /etc/apt/apt.conf.d/10-nocheckvalid
+            echo 'Package: *\nPin: origin "archive.debian.org"\nPin-Priority: 500' | sudo tee -a /etc/apt/preferences.d/10-archive-pin
+            sudo apt-get update
+            echo "Success"
+            sudo apt-get install python3
+            python3 --version
+            apt-get update
+            sudo apt-get install python3-pip
+            pip3 --version
+      - run :
+          name  :   AWS CLI Install 
+          command :  sudo pip3 install -y awscli
       - run :
           name : Upload Artifact To S3
           command : |            
