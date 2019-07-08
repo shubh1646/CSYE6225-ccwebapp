@@ -2,4 +2,4 @@
 
 #stoping tomcat
 sudo systemctl stop tomcat
-sudo systemctl status tomcat
+# sudo systemctl status tomcat
