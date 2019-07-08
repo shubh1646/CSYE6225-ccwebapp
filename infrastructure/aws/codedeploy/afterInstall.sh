@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo systemctl stop tomcat
+sudo systemctl stop tomcat.service
 
 sudo rm -rf /opt/tomcat/webapps/ROOT
 
