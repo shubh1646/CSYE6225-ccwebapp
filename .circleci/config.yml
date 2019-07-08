@@ -43,13 +43,13 @@ jobs:
           command: |
             #sudo rm /etc/apt/sources.list
             sudo apt clean
-            sudo apt update
+            #sudo apt update
             echo "Success"
-            #sudo apt install python3
-            #python --version
-            #apt-get update
-            sudo apt-get install python-pip python-dev build-essential
-            pip --version
+            sudo apt install python3
+            python3 --version
+            apt-get update
+            sudo apt-get install python3-pip
+            pip3 --version
       - run :
           name  :   AWS CLI Install 
           command :  sudo pip3 install -y awscli
