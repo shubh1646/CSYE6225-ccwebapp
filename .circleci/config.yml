@@ -5,31 +5,6 @@ jobs:
       - image: circleci/openjdk:11-jdk-stretch
     steps:
       - checkout
-      # - run:
-      #     name: JAVA 11 installation
-      #     command: |
-      #       sudo apt install dirmngr
-      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA8CACC073C3DB2A
-      #       echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
-      #       # sudo apt-get update
-      #       # sudo apt-get install oracle-java11-installer-local
-      #       # sudo apt-get install oracle-java11-set-default
-      #       echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/linuxuprising-java.list
-      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 73C3DB2A
-      #       sudo apt update
-      #       sudo apt install oracle-java11-set-default-local
-      #       jdkVersion=$(ls | grep jdk*)
-      #       sudo echo -e "JAVA_HOME=\"/usr/lib/jvm/$jdkVersion\"" >> /etc/bash.bashrc
-      #       sudo echo -e "PATH=\"$JAVA_HOME/bin:$PATH\"" >> /etc/bash.bashrc
-      #       sudo echo "export PATH" >> /etc/bash.bashrc
-      # - run:
-      #     name: Install packages
-      #     command: |
-      #       echo $CIRCLE_WORKING_DIRECTORY
-      #       sudo apt-get update && sudo apt-get install wget zip unzip -y
-      # - run:
-      #     name: Install awscli
-      #     command: sudo pip install awscli
       - run:
           name: Build WAR
           command: |
@@ -66,20 +41,6 @@ jobs:
       - run :
           name : Install pip
           command: |
-            # sudo rm /etc/apt/sources.list
-            # echo "deb http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
-            # echo "deb-src http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
-            # echo "Acquire::Check-Valid-Until false;" | sudo tee -a /etc/apt/apt.conf.d/10-nocheckvalid
-            # echo 'Package: *\nPin: origin "archive.debian.org"\nPin-Priority: 500' | sudo tee -a /etc/apt/preferences.d/10-archive-pin
-            # sudo apt-get update
-            # sudo apt update
-            # echo "Success"
-            # sudo apt-get install python3
-            # sudo apt-get install dh-python
-            # python --version
-            # apt-get update
-            # sudo apt-get install python3-pip
-            # pip3 --version
             sudo apt install python3-pip
             pip3 --version
       - run :
@@ -97,7 +58,6 @@ jobs:
             echo "CodeDeploy"
             # aws deploy create-deployment --application-name ${applicationName} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${groupName} --s3-location bucket=${bucketName},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
             aws deploy register-application-revision --application-name csye6225-webapp \
-            --revision revisionType=S3,s3Location={bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip} \
             --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
             echo "------------------------------------------------------"
             aws deploy list-application-revision --application-name csye6225-webapp \
