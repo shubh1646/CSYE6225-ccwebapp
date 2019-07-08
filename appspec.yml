@@ -3,14 +3,14 @@ os: linux
 files:             
   - source: ./webapp/target/ROOT.war
     destination: /opt/tomcat/webapps
-  - source: ./applicationStop.sh
-    destination: /home/centos
-  - source: ./beforeInstall.sh
-    destination: /home/centos
-  - source: ./afterInstall.sh
-    destination: /home/centos
-  - source: ./applicationStart.sh
-    destination: /home/centos
+  # - source: ./applicationStop.sh
+  #   destination: /home/centos
+  # - source: ./beforeInstall.sh
+  #   destination: /home/centos
+  # - source: ./afterInstall.sh
+  #   destination: /home/centos
+  # - source: ./applicationStart.sh
+  #   destination: /home/centos
 hooks:
   ApplicationStop:
     - location: ./applicationStop.sh
