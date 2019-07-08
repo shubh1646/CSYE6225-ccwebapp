@@ -81,9 +81,10 @@ jobs:
             # sudo apt-get install python3-pip
             # pip3 --version
             sudo apt install python3-pip
+            pip3 --version
       - run :
           name  :   AWS CLI Install 
-          command :  sudo pip3 install -y awscli
+          command :  sudo pip3 install awscli
       - run :
           name : Upload Artifact To S3
           command : |            
