@@ -8,9 +8,8 @@ jobs:
       - run:
           name: JAVA 11 installation
           command: |
-            sudo apt update
-            sudo apt install oracle-java11-installer
-            sudo apt install oracle-java11-set-default
+            sudo apt-get update
+            sudo apt-get install openjdk-11-jdk
             jdkVersion=$(ls | grep jdk*)
             sudo echo -e "JAVA_HOME=\"/usr/lib/jvm/$jdkVersion\"" >> /etc/bash.bashrc
             sudo echo -e "PATH=\"$JAVA_HOME/bin:$PATH\"" >> /etc/bash.bashrc
