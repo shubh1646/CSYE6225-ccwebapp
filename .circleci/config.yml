@@ -57,11 +57,11 @@ jobs:
           command : |
             echo "CodeDeploy"
             # aws deploy create-deployment --application-name ${applicationName} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${groupName} --s3-location bucket=${bucketName},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
-            aws deploy register-application-revision --application-name csye6225-webapp \
-            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
+            aws deploy register-application-revision --region ${AWS_REGION} --application-name csye6225-webapp \
+            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip
             echo "------------------------------------------------------"
-            aws deploy list-application-revision --application-name csye6225-webapp \
-            --s3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
+            aws deploy list-application-revisions --application-name csye6225-webapp \
+            --s-3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
             echo "------------------------------------------------------"
             deploymentId=$(aws deploy create-deployment \
             --application-name csye6225-webapp \
