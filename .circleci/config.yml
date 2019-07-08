@@ -1,29 +1,33 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:11-jdk
     steps:
       - checkout
       - run:
           name: Build Artifact
           command: |
             cd webapp
-            ./gradlew war
-            cd build/libs
+            ./mvnw clean install
+            cd target/
             ls -al
-            cd ../../..
+            cd ../..
+            pwd
       - run:
           name: Zip Artifact
           command: |
             echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
             pwd
+            find . -name appspec.yml
             ls -al
             mkdir -p codedeploy_artifact
+            find ./infrastructure/aws/codedeploy/ -name *.sh
             cp infrastructure/aws/codedeploy/*.sh .
-            zip -r csye6225-web-app-${CIRCLE_BUILD_NUM}.zip webapp/build/libs/ROOT.war *.sh *.yml
+            find . -name *.yml
+            zip -r csye6225-webapp-${CIRCLE_BUILD_NUM}.zip webapp/target/ROOT.war *.sh *.yml
             ls -al
-            mv csye6225-web-app-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
+            mv csye6225-webapp-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
             ls -al
             pwd
             cd codedeploy_artifact
@@ -33,10 +37,52 @@ jobs:
             pwd
             ls -al
       - run:
+          name: PIP installation
+          command: |
+            sudo apt update
+            sudo apt-get install python3
+            python3 --version
+            sudo apt install python3-pip
+            pip3 --version
+      - run:
+          name: AWS Cli installation
+          command: |
+            sudo pip3 install awscli
+      - run:
           name: Upload Artifact to S3
           command: |
-            echo "Hello"
+            echo "Uploading to S3 bucket"
+            cd codedeploy_artifact
+            # aws deploy push --application-name csye6225-webapp \
+            # --s3-location s3://code-deploy.${AWS_CODE_DEPLOY_BUCKET}/csye6225-webapp-${CIRCLE_BUILD_NUM}.zip \
+            # --ignore-hidden-files
+            # --source .
+            aws s3 cp csye6225-webapp-${CIRCLE_BUILD_NUM}.zip s3://${AWS_CODE_DEPLOY_BUCKET}
       - run:
           name: Make CodeDeploy API call
           command: |
-            echo "Hello CodeDeploy" 
+            # codeDeployServiceRoleARN=$(aws iam get-role --role-name CodeDeployServiceRole --query "Role.Arn" --output text)
+            # echo "$codeDeployServiceRoleARN"
+            # deploymentGroupId=$(aws deploy create-deployment-group \
+            # --application-name csye6225-webapp \
+            # --deployment-group-name csye6225-webapp-deployment \
+            # --service-role-arn codeDeployServiceRoleARN \
+            # --deployment-style deploymentType=IN_PLACE,deploymentOption=WITHOUT_TRAFFIC_CONTROL \
+            # --ec2-tag-filters Key=Application Role,Value=Web Server,Type=KEY_AND_VALUE \
+            # --deployment-config-name CodeDeployDefault.AllAtOnce \
+            # --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
+            # echo "$deploymentGroupId"
+            aws deploy register-application-revision --application-name csye6225-webapp \
+            --revision revisionType=S3,s3Location={bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip} \
+            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
+            echo "------------------------------------------------------"
+            aws deploy list-application-revision --application-name csye6225-webapp \
+            --s3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
+            echo "------------------------------------------------------"
+            deploymentId=$(aws deploy create-deployment \
+            --application-name csye6225-webapp \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name csye6225-webapp-deployment \
+            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip \
+            --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
+            echo "$deploymentId"
