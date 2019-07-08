@@ -58,7 +58,7 @@ jobs:
             echo "CodeDeploy"
             echo "$AWS_REGION"
             aws deploy register-application-revision --region ${AWS_REGION} --application-name csye6225-webapp \
-            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=tar|tgz|zip
+            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip
             # echo "------------------------------------------------------"
             # aws deploy list-application-revisions --application-name csye6225-webapp \
             # --s-3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
