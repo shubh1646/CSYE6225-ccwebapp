@@ -41,14 +41,14 @@ jobs:
       - run :
           name : Install pip
           command: |
-            sudo rm /etc/apt/sources.list
-            #sudo apt-get update
-            #echo "Success"
-            sudo apt-get install python3
-            python3 --version
+            #sudo rm /etc/apt/sources.list
+            sudo apt-get update
+            echo "Success"
+            sudo apt-get install python
+            python --version
             apt-get update
-            sudo apt-get install python3-pip
-            pip3 --version
+            sudo apt-get install python-pip
+            pip --version
       - run :
           name  :   AWS CLI Install 
           command :  sudo pip3 install -y awscli
