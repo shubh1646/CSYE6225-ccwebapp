@@ -41,7 +41,7 @@ jobs:
       - run :
           name : Install pip
           command: |
-            #sudo rm /etc/apt/sources.list
+            sudo rm /etc/apt/sources.list
             sudo apt-get update
             echo "Success"
             sudo apt-get install python
