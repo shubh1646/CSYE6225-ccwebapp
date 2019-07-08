@@ -1,7 +1,6 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/webapp
     docker:
       - image: circleci/openjdk:11-jdk
     steps:
@@ -10,8 +9,10 @@ jobs:
           name: Build WAR
           command: |
             pwd
-            ls
-            sh mvnw clean install
+            cd webapp/
+            pwd
+            ls -al
+            ./mvnw clean install
             cd target
             ls -al
             cd ../..
