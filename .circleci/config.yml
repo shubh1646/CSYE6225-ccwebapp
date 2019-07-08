@@ -10,7 +10,8 @@ jobs:
           name: Build WAR
           command: |
             pwd
-            ./mvnw clean install
+            ls
+            sh mvnw clean install
             cd target
             ls -al
             cd ../..
