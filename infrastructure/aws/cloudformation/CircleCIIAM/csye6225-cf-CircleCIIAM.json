@@ -262,7 +262,7 @@
     },
     "s3BucketId": {
       "Description": "Application S3 Bucket",
-      "Value": { "Fn::GetAtt": [ "s3BucketId", "Arn" ] },
+      "Value": { "Ref": "s3BucketId" },
       "Export": {
          "Name": { "Fn::Sub": "${AWS::StackName}-s3BucketId" }
       }
