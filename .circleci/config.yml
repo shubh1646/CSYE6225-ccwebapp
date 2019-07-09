@@ -60,6 +60,7 @@ jobs:
         command : |
           echo "--------------------"
           deploymentId=$(aws deploy create-deployment \
+          --region ${AWS_REGION} \
           --application-name csye6225-webapp \
           --deployment-config-name CodeDeployDefault.AllAtOnce \
           --deployment-group-name csye6225-webapp-deployment \
