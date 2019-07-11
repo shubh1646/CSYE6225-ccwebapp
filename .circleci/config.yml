@@ -1,11 +1,6 @@
 version: 2.1
 jobs:
   build:
-    working_directory: ~/webapp
-    filters:
-      branches:
-        only:
-          - assign5
     docker:
       - image: circleci/openjdk:11-jdk
     steps:
@@ -13,6 +8,7 @@ jobs:
       - run:
           name: Build WAR
           command: |
+            cd webapp/
             ./mvnw clean install
             cd target
             ls -al
@@ -42,7 +38,7 @@ jobs:
       - run :
           name : Install pip
           command: |
-            sudo apt update
+            sudo apt-get update || sudo apt-get update
             sudo apt-get install python3
             python3 --version
             sudo apt install python3-pip

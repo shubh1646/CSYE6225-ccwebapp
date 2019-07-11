@@ -1,16 +1,7 @@
 version: 0.0
 os: linux
 files:             
-  - source: ./webapp/target/ROOT.war
-    destination: /opt/tomcat/webapps
-  - source: ./applicationStop.sh
-    destination: /home/centos
-  - source: ./beforeInstall.sh
-    destination: /home/centos
-  - source: ./afterInstall.sh
-    destination: /home/centos
-  - source: ./applicationStart.sh
-    destination: /home/centos
+#defining hooks in appspec 
 hooks:
   BeforeInstall:
     - location: ./beforeInstall.sh
