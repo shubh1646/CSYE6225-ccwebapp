@@ -58,7 +58,6 @@ jobs:
     - run :
         name : Make CodeDeploy API call
         command : |
-          echo "--------------------"
           deploymentId=$(aws deploy create-deployment \
           --region ${AWS_REGION} \
           --application-name csye6225-webapp \
