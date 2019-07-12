@@ -1,7 +1,9 @@
 #!/bin/bash
 
-sudo systemctl stop tomcat
+sudo systemctl stop tomcat.service
+# sudo systemctl status tomcat
 
+#removing previous build ROOT folder
 sudo rm -rf /opt/tomcat/webapps/ROOT
 
 sudo chown tomcat:tomcat /opt/tomcat/webapps/ROOT.war
