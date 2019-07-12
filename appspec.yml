@@ -1,12 +1,21 @@
 version: 0.0
 os: linux
-
 files:             
-  - source: ./webapp/build/libs/ROOT.war
-    destination: /opt/tomcat/webapps
-
+#defining hooks in appspec 
 hooks:
+  ApplicationStop:
+    - location: ./applicationStop.sh
+      timeout: 180
+      runas: centos
+  BeforeInstall:
+    - location: ./beforeInstall.sh
+      timeout: 180
+      runas: centos
   AfterInstall:
    - location: ./afterInstall.sh
      timeout: 180
      runas: centos
+  ApplicationStart:
+    - location: ./applicationStart.sh
+      timeout: 180
+      runas: centos
