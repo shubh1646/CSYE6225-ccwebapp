@@ -29,9 +29,9 @@ public class CoverRestController {
         Book book = bookService.getBookById(idBook);
         if(book == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Book_ID\" }");
 
-        Cover cover = coverService.getPresignedUrl(idImage);
-        if(cover == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Image_ID\" }");
+        if(coverService.getCoverById(idImage) == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Image_ID\" }");
 
+        Cover cover = coverService.getPresignedUrl(idImage);
         return ResponseEntity.status(HttpStatus.OK).body(cover);
     }
 

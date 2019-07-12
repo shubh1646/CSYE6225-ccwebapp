@@ -1,5 +1,5 @@
 #!/bin/bash
 
 #Starting tomcat service
-sudo systemctl start tomcat
-sudo systemctl status tomcat
+sudo systemctl start tomcat.service
+# sudo systemctl status tomcat

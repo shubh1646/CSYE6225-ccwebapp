@@ -3,6 +3,10 @@ os: linux
 files:             
 #defining hooks in appspec 
 hooks:
+  ApplicationStop:
+    - location: ./applicationStop.sh
+      timeout: 180
+      runas: centos
   BeforeInstall:
     - location: ./beforeInstall.sh
       timeout: 180

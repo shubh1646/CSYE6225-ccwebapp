@@ -1,10 +1,10 @@
-version: 2.1
+version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:11-jdk
+      - image: circleci/openjdk:11-jdk-stretch
     steps:
-      - checkout 
+      - checkout
       - run:
           name: Build WAR
           command: |
@@ -56,15 +56,13 @@ jobs:
           name : Make CodeDeploy API call 
           command : |
             echo "CodeDeploy"
-            # aws deploy create-deployment --application-name ${applicationName} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${groupName} --s3-location bucket=${bucketName},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
-            aws deploy register-application-revision --application-name csye6225-webapp \
-            --revision revisionType=S3,s3Location={bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip} \
-            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},bundleType=zip,key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip
+            aws deploy register-application-revision --region ${AWS_REGION} --application-name csye6225-webapp \
+            --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip
             echo "------------------------------------------------------"
-            aws deploy list-application-revision --application-name csye6225-webapp \
-            --s3-bucket ${AWS_CODE_DEPLOY_BUCKET} --deployed include
+            aws deploy list-application-revisions --region ${AWS_REGION} --application-name csye6225-webapp \
+            --s-3-bucket code-deploy.csye6225-su19-sebastianc.me --deployed exclude
             echo "------------------------------------------------------"
-            deploymentId=$(aws deploy create-deployment \
+            deploymentId=$(aws deploy create-deployment --region ${AWS_REGION} \
             --application-name csye6225-webapp \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --deployment-group-name csye6225-webapp-deployment \
