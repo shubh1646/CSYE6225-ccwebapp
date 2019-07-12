@@ -1,7 +1,8 @@
 version: 0.0
 os: linux
 files:             
-#defining hooks in appspec 
+  - source: ./webapp/target/ROOT.war
+    destination: /opt/tomcat/webapps
 hooks:
   ApplicationStop:
     - location: ./applicationStop.sh
