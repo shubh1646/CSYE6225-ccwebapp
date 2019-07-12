@@ -1,18 +1,18 @@
 {
-   "AWSTemplateFormatVersion" : "2010-09-09",
-   "Description" : "AWS CloudFormation Template for CircleCI Roles and Policies",
-   "Parameters": {
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "AWS CloudFormation Template for CircleCI Roles and Policies",
+  "Parameters": {
     "domainName": {
       "Description": "domain Name for S3 Bucket Naming",
       "Type": "String",
       "AllowedValues": [
-          "csye6225-su19-sebastianc.me",
-          "csye6225-su19-gandhiman.me",
-          "csye6225-su19-sharmashubh.me"
+        "csye6225-su19-sebastianc.me",
+        "csye6225-su19-gandhiman.me",
+        "csye6225-su19-sharmashubh.me"
       ]
     }
-   },
-   "Resources": {
+  },
+  "Resources": {
     "s3BucketId": {
       "Type" : "AWS::S3::Bucket",
       "DeletionPolicy" : "Delete",
@@ -24,9 +24,9 @@
           "IgnorePublicAcls" : true,
           "RestrictPublicBuckets" : true
         },
-        "Tags" : [ { 
+        "Tags" : [ {
           "Key" : "Name",
-          "Value" : { "Fn::Sub": "${AWS::StackName}-S3-Bucket" } 
+          "Value" : { "Fn::Sub": "${AWS::StackName}-S3-Bucket" }
         } ]
       }
     },
@@ -38,17 +38,17 @@
         "PolicyDocument": {
           "Version" : "2012-10-17",
           "Statement": [
-              {
-                "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
-                "Effect": "Allow",
-                "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
-                "Resource": { 
-                  "Fn::Sub": [ 
-                    "${bucketArn}/*",
-                    { "bucketArn": {"Fn::GetAtt" : [ "s3BucketId", "Arn" ]} } 
-                  ]
-                }
+            {
+              "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
+              "Effect": "Allow",
+              "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+              "Resource": {
+                "Fn::Sub": [
+                  "${bucketArn}/*",
+                  { "bucketArn": {"Fn::GetAtt" : [ "s3BucketId", "Arn" ]} }
+                ]
               }
+            }
           ]
         }
       }
@@ -141,17 +141,17 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [ {
-              "Effect": "Allow",
-              "Principal": { "Service": ["ec2.amazonaws.com"] },
-              "Action": ["sts:AssumeRole"]
+            "Effect": "Allow",
+            "Principal": { "Service": ["ec2.amazonaws.com"] },
+            "Action": ["sts:AssumeRole"]
           } ]
         },
         "Path": "/",
         "RoleName": "CodeDeployEC2ServiceRole",
         "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"} ],
-        "Tags" : [ { 
+        "Tags" : [ {
           "Key" : "Name",
-          "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" } 
+          "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }
         } ]
       }
     },
@@ -169,9 +169,9 @@
         "Path": "/",
         "RoleName": "CodeDeployServiceRole",
         "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole" ],
-        "Tags" : [ { 
+        "Tags" : [ {
           "Key" : "Name",
-          "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployServiceRole" } 
+          "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployServiceRole" }
         } ]
       }
     },
@@ -224,8 +224,8 @@
                 "codedeploy:ListApplicationRevisions"
               ],
               "Resource": [ {
-                  "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${applicationId}"
-              } ] 
+                "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${applicationId}"
+              } ]
             },
             {
               "Effect": "Allow",
@@ -233,7 +233,7 @@
                 "codedeploy:CreateDeployment",
                 "codedeploy:GetDeployment"
               ],
-              "Resource": [ 
+              "Resource": [
                 { "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${applicationId}/${deploymentGroupId}" }
               ]
             },
@@ -251,23 +251,21 @@
         "Users": ["circleci"]
       }
     }
-   },
-   "Outputs": {
+  },
+  "Outputs": {
     "codeDeployEC2ServiceRoleId": {
       "Description": "Application S3 Bucket",
       "Value": { "Ref": "codeDeployEC2ServiceRoleId" },
       "Export": {
-         "Name": { "Fn::Sub": "${AWS::StackName}-codeDeployEC2ServiceRoleId" }
+        "Name": { "Fn::Sub": "${AWS::StackName}-codeDeployEC2ServiceRoleId" }
       }
     },
     "s3BucketId": {
       "Description": "Application S3 Bucket",
       "Value": { "Ref": "s3BucketId" },
       "Export": {
-         "Name": { "Fn::Sub": "${AWS::StackName}-s3BucketId" }
+        "Name": { "Fn::Sub": "${AWS::StackName}-s3BucketId" }
       }
     }
   }
- }
-
-
+}

@@ -59,7 +59,6 @@ jobs:
           name : Make CodeDeploy API call 
           command : |
             echo "CodeDeploy"
-            echo "$AWS_REGION"
             aws deploy register-application-revision --region ${AWS_REGION} --application-name csye6225-webapp \
             --s3-location bucket=${AWS_CODE_DEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip
             echo "------------------------------------------------------"

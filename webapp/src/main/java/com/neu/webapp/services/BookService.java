@@ -2,6 +2,7 @@ package com.neu.webapp.services;
 
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
+import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,11 +18,20 @@ public class BookService {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private CoverService coverService;
+
     public Iterable<Book> getAllBooks() {
-        return bookRepository.findAll();
+        Iterable<Book> books = bookRepository.findAll();
+        for(Book book: books) {
+            Cover cover = book.getImage();
+            if(cover!=null) {
+                UUID id = cover.getId();
+                book.setImage(coverService.getPresignedUrl(id));
+            }
+        }
+        return books;
     }
-
-
 
     public Book CreateBook(Book book) {
         Book b = bookRepository.save(book);
@@ -39,14 +49,21 @@ public class BookService {
         if (book.getIsbn() != null)  upBook.setIsbn(book.getIsbn());
         if (book.getTitle() != null) upBook.setTitle(book.getTitle());
         if (book.getQuantity() != null) upBook.setQuantity(book.getQuantity());
-        if (book.getImage() != null && !book.equals(upBook)) upBook.setImage(book.getImage());
+//        if (book.getImage() != null && !book.equals(upBook)) upBook.setImage(book.getImage());
 
         bookRepository.save(upBook);
     }
 
     public Book getBookById(UUID id) {
         Optional<Book> temp = bookRepository.findById(id);
-        return temp.isEmpty() ? null : temp.get();
+//        return temp.isEmpty() ? null : temp.get();
+        Book book = null;
+        if(temp.isPresent()) {
+            book = temp.get();
+            Cover cover = book.getImage();
+            if(cover!=null) book.setImage(coverService.getPresignedUrl(cover.getId()));
+        }
+        return book;
     }
 
     public void deleteById(UUID id){

@@ -52,7 +52,8 @@ public class CoverServiceDev implements CoverService {
         Cover cover = new Cover(path);
         book.setImage(cover);
         bookRepository.save(book);
-        return book.getImage();
+//        return book.getImage();
+        return getPresignedUrl(book.getImage().getId());
     }
 
     public void deleteFile(String fileName) throws Exception {

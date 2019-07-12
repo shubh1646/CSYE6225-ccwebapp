@@ -40,7 +40,6 @@ then
    exit
 fi
 
-
 status=$(aws cloudformation create-stack --stack-name $applicationStackName \
 --template-body file://csye6225-cf-application.json \
 --parameters \
