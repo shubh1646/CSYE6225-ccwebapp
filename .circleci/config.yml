@@ -8,10 +8,7 @@ jobs:
       - run:
           name: Build WAR
           command: |
-            pwd
             cd webapp/
-            pwd
-            ls -al
             ./mvnw clean install
             cd target
             ls -al
