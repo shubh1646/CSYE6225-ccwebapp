@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/book/{idBook}/image")
+@RequestMapping("/bookCyril/{idBook}/image")
 @Validated
 public class CoverRestController {
     @Autowired
