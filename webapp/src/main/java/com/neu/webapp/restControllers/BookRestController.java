@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bookmansi")
+@RequestMapping("/book")
 public class BookRestController {
     @Autowired
     private BookService bookService;
