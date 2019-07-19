@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bookCyril")
+@RequestMapping("/book")
 public class BookRestController {
     @Autowired
     private BookService bookService;
@@ -53,7 +53,7 @@ public class BookRestController {
     @PutMapping
     public ResponseEntity<?> updateBooks(@RequestBody Book book) throws Exception{
         //check id in json incomming payload
-        if(book.getId() == null || book == null ) {
+        if(book == null || book.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Book does not hae an ID\" }");
         }
 
