@@ -35,7 +35,7 @@ public class CoverServiceProd implements CoverService {
     @Override
     public Cover getCoverById(UUID id) {
         Optional<Cover> temp = coverRepository.findById(id);
-        return temp.isEmpty() ? null : temp.get();
+        return temp.isPresent() ? temp.get() : null;
     }
 
     public  static File multipartToFile(MultipartFile imageFile, String imageName) throws IllegalStateException, IOException {
@@ -85,11 +85,11 @@ public class CoverServiceProd implements CoverService {
         Cover cover = new Cover(path);
         book.setImage(cover);
         bookRepository.save(book);
-        return book.getImage();
+        return getPresignedUrl(book.getImage().getId());
     }
 
     @Override
-    public void deleteFile(String fileName) throws Exception {
+    public void deleteFile(String fileName) {
         try {
             s3.deleteObject(BUCKET_NAME, fileName);
         }catch (AmazonServiceException e) {
@@ -99,17 +99,19 @@ public class CoverServiceProd implements CoverService {
     }
 
     @Override
-    public void updateCover(Book book, Cover cover, MultipartFile imageFile, String localPath) throws Exception{
+    public void updateCover(Book book, Cover cover, MultipartFile imageFile, String localPath) throws Exception {
         deleteFile(cover.getUrl());
         String path = writeFile(imageFile, book.getId(), localPath);
         cover.setUrl(path);
-        coverRepository.save(cover);
+        book.setImage(cover);
+        bookRepository.save(book);
     }
 
     @Override
     public void deleteCover(Book book, Cover cover) throws Exception{
         deleteFile(cover.getUrl());
         book.setImage(null);
-        coverRepository.delete(cover);
+        bookRepository.save(book);
+        coverRepository.deleteById(cover.getId());
     }
 }

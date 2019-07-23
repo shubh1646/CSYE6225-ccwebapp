@@ -10,6 +10,11 @@
         "csye6225-su19-gandhiman.me",
         "csye6225-su19-sharmashubh.me"
       ]
+    },
+    "CloudWatchAgentPolicyArn": {
+      "Description": "CloudWatchAgentServerPolicy ARN",
+      "Type": "String",
+      "Default": "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
     }
   },
   "Resources": {
@@ -148,7 +153,7 @@
         },
         "Path": "/",
         "RoleName": "CodeDeployEC2ServiceRole",
-        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"} ],
+        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"}, {"Ref": "CloudWatchAgentPolicyArn"} ],
         "Tags" : [ {
           "Key" : "Name",
           "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }

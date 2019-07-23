@@ -30,7 +30,7 @@ public class CoverServiceDev implements CoverService {
 
     public Cover getCoverById(UUID id) {
         Optional<Cover> temp = coverRepository.findById(id);
-        return temp.isEmpty() ? null : temp.get();
+        return temp.isPresent() ? temp.get() : null;
     }
 
     public String writeFile(MultipartFile imageFile, UUID id, String localPath) throws Exception{
@@ -52,7 +52,6 @@ public class CoverServiceDev implements CoverService {
         Cover cover = new Cover(path);
         book.setImage(cover);
         bookRepository.save(book);
-//        return book.getImage();
         return getPresignedUrl(book.getImage().getId());
     }
 
@@ -65,7 +64,8 @@ public class CoverServiceDev implements CoverService {
         deleteFile(cover.getUrl());
         String path = writeFile(imageFile, book.getId(), localPath);
         cover.setUrl(path);
-        coverRepository.save(cover);
+        book.setImage(cover);
+        bookRepository.save(book);
     }
 
     public void deleteCover(Book book, Cover cover) throws Exception{

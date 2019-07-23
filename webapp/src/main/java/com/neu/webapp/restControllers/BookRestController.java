@@ -3,7 +3,6 @@ package com.neu.webapp.restControllers;
 import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
-import com.neu.webapp.services.CoverService;
 import com.neu.webapp.validators.BookValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,6 @@ public class BookRestController {
     public Iterable<Book> getAllBooks() throws Exception{
         Iterable<Book> allBooks = bookService.getAllBooks();
         return allBooks;
-
     }
 
 
@@ -56,7 +54,6 @@ public class BookRestController {
         if(book == null || book.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Book does not hae an ID\" }");
         }
-
         bookService.UpdateBook(book);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);    /// return return code according to the condition (custpm )
     }
@@ -65,7 +62,7 @@ public class BookRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getBookPerId( @PathVariable UUID id) throws Exception{
-        Book book = bookService.getBookById(id);
+        Book book = bookService.getBook(id);
         if(book != null){
             return ResponseEntity.status(HttpStatus.OK).body(book);
         }
