@@ -12,3 +12,9 @@ sudo chown tomcat:tomcat /opt/tomcat/webapps/ROOT.war
 sudo rm -rf /opt/tomcat/logs/catalina*
 sudo rm -rf /opt/tomcat/logs/*.log
 sudo rm -rf /opt/tomcat/logs/*.txt
+
+touch csye6225.log
+sudo chgrp -R tomcat csye6225.log
+sudo chmod -R g+r csye6225.log
+sudo chmod g+x csye6225.log
+sudo mv csye6225.log /opt/tomcat/logs/csye6225.log
