@@ -4,12 +4,17 @@ import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
+import com.neu.webapp.restControllers.CoverRestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +22,8 @@ import java.util.UUID;
 
 @Service
 public class BookService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoverRestController.class);
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -74,8 +81,10 @@ public class BookService {
             if (isBookImagePresent(book)) coverService.deleteFile(book.getImage().getUrl());
             bookRepository.deleteById(id);
         }catch(Exception exc) {
-            System.out.println(exc.getMessage());
-            exc.printStackTrace();
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            LOGGER.error(exc.getMessage()+sw.toString());
         }
     }
 

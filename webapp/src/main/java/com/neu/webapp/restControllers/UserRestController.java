@@ -4,6 +4,7 @@ import com.neu.webapp.errors.RegistrationStatus;
 import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
+import com.timgroup.statsd.StatsDClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,16 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 @RestController
 public class UserRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
+
+    @Autowired
+    private StatsDClient metricsClient;
 
     @Autowired
     private UserService userService;
@@ -35,23 +40,26 @@ public class UserRestController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<String> welcome(HttpServletRequest request) throws Exception{
+    public ResponseEntity<String> welcome(HttpServletRequest request, Principal principal) throws Exception{
+        metricsClient.incrementCounter("endpoint./.http.get");
+        LOGGER.info(principal.getName()+" User Authenticated");
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String message = "Welcome  current time: "+sdf.format(cal.getTime());
-        return ResponseEntity.status(HttpStatus.OK).body(
-                "{ \"message\": \""+message+"\" }"
-        );
+        return ResponseEntity.status(HttpStatus.OK).body("{ \"message\": \""+message+"\" }");
     }
 
     @PostMapping("/user/register")
-    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
-        RegistrationStatus registrationStatus;
+    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) {
+        metricsClient.incrementCounter("endpoint./user/register.http.post");
 
+        RegistrationStatus registrationStatus;
         if(errors.hasErrors()) {
+            LOGGER.warn("User Registration Failed");
             registrationStatus = userService.getRegistrationStatus(errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(registrationStatus);
         }else {
+            LOGGER.info("User Registration Successful");
             registrationStatus = new RegistrationStatus();
             userService.register(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(registrationStatus);

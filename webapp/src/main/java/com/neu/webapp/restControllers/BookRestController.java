@@ -4,6 +4,9 @@ import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
 import com.neu.webapp.validators.BookValidator;
+import com.timgroup.statsd.StatsDClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/book")
 public class BookRestController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoverRestController.class);
+
+    @Autowired
+    private StatsDClient metricsClient;
+
     @Autowired
     private BookService bookService;
 
@@ -30,55 +38,62 @@ public class BookRestController {
 
     // "Post request to create books ";
     @PostMapping
-    public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) throws Exception{
+    public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) {
+        metricsClient.incrementCounter("endpoint./book.http.post");
         BookAdditionStatus bookAdditionStatus;
         if (errors.hasErrors()) {
+            LOGGER.warn("Book validation failed");
             bookAdditionStatus = bookService.getStockingStatus(errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bookAdditionStatus);
         }
+        LOGGER.info("Book added");
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.CreateBook(book));
     }
 
     //   "get request to return all the books ";
     @GetMapping
-    public Iterable<Book> getAllBooks() throws Exception{
+    public Iterable<Book> getAllBooks() {
+        metricsClient.incrementCounter("endpoint./book.http.get");
         Iterable<Book> allBooks = bookService.getAllBooks();
+        LOGGER.info("All Books fetched");
         return allBooks;
     }
 
 
     //PUT request to update all the books
     @PutMapping
-    public ResponseEntity<?> updateBooks(@RequestBody Book book) throws Exception{
-        //check id in json incomming payload
+    public ResponseEntity<?> updateBooks(@RequestBody Book book) {
+        metricsClient.incrementCounter("endpoint./book.http.put");
         if(book == null || book.getId() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Book does not hae an ID\" }");
+            LOGGER.warn("Book does not have an ID");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Book does not have an ID\" }");
         }
+        LOGGER.info("Book modified");
         bookService.UpdateBook(book);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);    /// return return code according to the condition (custpm )
     }
 
-
-
     @GetMapping("/{id}")
-    public ResponseEntity<?> getBookPerId( @PathVariable UUID id) throws Exception{
+    public ResponseEntity<?> getBookPerId( @PathVariable UUID id) {
+        metricsClient.incrementCounter("endpoint./book/{id}.http.get");
         Book book = bookService.getBook(id);
-        if(book != null){
-            return ResponseEntity.status(HttpStatus.OK).body(book);
-        }
-        else{
+        if(book == null) {
+            LOGGER.warn("No book with id: "+id.toString()+" present");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Not Found\" }");
         }
+        LOGGER.info("Book fetched");
+        return ResponseEntity.status(HttpStatus.OK).body(book);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) throws Exception{
-        if (bookService.getBookById(id) != null) {
-            bookService.deleteById(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
-        }
-        else{
+    public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) {
+        metricsClient.incrementCounter("endpoint./book/{id}.http.delete");
+        if (bookService.getBookById(id) == null) {
+            LOGGER.warn("No book with id: "+id.toString()+" present");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Bad Request\" }");
         }
+        LOGGER.info("Book deleted");
+        bookService.deleteById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 }

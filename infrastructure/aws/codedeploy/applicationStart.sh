@@ -1,5 +1,5 @@
 #!/bin/bash
 
-#Starting tomcat service
+# Starting tomcat service
+sudo systemctl start amazon-cloudwatch-agent.service
 sudo systemctl start tomcat.service
-# sudo systemctl status tomcat
