@@ -49,7 +49,7 @@ public class UserRestController {
         LOGGER.info(principal.getName()+" User Authenticated");
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        String message = "Welcome  current time: "+sdf.format(cal.getTime()+" "+loggingFile);
+        String message = "Welcome  current time: "+sdf.format(cal.getTime())+" "+loggingFile;
         return ResponseEntity.status(HttpStatus.OK).body("{ \"message\": \""+message+"\" }");
     }
 
