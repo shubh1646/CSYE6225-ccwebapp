@@ -226,9 +226,9 @@
               "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
               "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
               "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/amazon-cloudwatch-agent.json\n",
               "sudo systemctl start tomcat"
-            ]
-            ]
+            ] ]
           }
         },
         "Tags" : [
