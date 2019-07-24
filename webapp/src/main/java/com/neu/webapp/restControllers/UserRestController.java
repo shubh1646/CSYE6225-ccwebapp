@@ -8,6 +8,7 @@ import com.timgroup.statsd.StatsDClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -39,13 +40,16 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
+    @Value("${logging.file}")
+    private String loggingFile;
+
     @GetMapping("/")
     public ResponseEntity<String> welcome(HttpServletRequest request, Principal principal) throws Exception{
         metricsClient.incrementCounter("endpoint./.http.get");
         LOGGER.info(principal.getName()+" User Authenticated");
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        String message = "Welcome  current time: "+sdf.format(cal.getTime());
+        String message = "Welcome  current time: "+sdf.format(cal.getTime()+" "+loggingFile);
         return ResponseEntity.status(HttpStatus.OK).body("{ \"message\": \""+message+"\" }");
     }
 
