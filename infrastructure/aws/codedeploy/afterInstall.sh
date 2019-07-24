@@ -13,7 +13,8 @@ sudo rm -rf /opt/tomcat/logs/catalina*
 sudo rm -rf /opt/tomcat/logs/*.log
 sudo rm -rf /opt/tomcat/logs/*.txt
 
-touch csye6225.log
+sudo ls /opt/tomcat/logs/
+sudo touch csye6225.log
 sudo chgrp -R tomcat csye6225.log
 sudo chmod -R g+r csye6225.log
 sudo chmod g+x csye6225.log
