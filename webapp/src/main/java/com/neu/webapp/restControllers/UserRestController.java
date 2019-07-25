@@ -4,6 +4,9 @@ import com.neu.webapp.errors.RegistrationStatus;
 import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
+import com.timgroup.statsd.StatsDClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,8 @@ import java.util.Calendar;
 
 @RestController
 public class UserRestController {
+    private final static Logger logger = LoggerFactory.getLogger(UserRestController.class);
+
     @Autowired
     private UserService userService;
 
@@ -30,8 +35,13 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
+    @Autowired
+    private StatsDClient statsDClient;
+
     @GetMapping("/")
     public ResponseEntity<String> welcome(HttpServletRequest request) throws Exception{
+        logger.info("Welcome Page");
+        statsDClient.incrementCounter("endpoint.welcome.http.get");
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String message = "Welcome  current time: "+sdf.format(cal.getTime());
@@ -42,6 +52,8 @@ public class UserRestController {
 
     @PostMapping("/user/register")
     public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+        logger.info("User Register Page");
+        statsDClient.incrementCounter("endpoint.user.http.post");
         RegistrationStatus registrationStatus;
 
         if(errors.hasErrors()) {
