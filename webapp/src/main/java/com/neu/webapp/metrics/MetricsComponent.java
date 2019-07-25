@@ -14,20 +14,20 @@ public class MetricsComponent {
 
     private final static Logger logger = LoggerFactory.getLogger(MetricsComponent.class);
 
-    @Value("$(publish.metrics)")
+    @Value("${publish.metrics}")
     private boolean publishMetrics;
 
-    @Value("$(publish.server.hostname)")
-    private String publishServerHost;
+    @Value("${metrics.server.hostname}")
+    private String metricsServerHost;
 
-    @Value("$(publish.server.port)")
-    private int publishServerPort;
+    @Value("${metrics.server.port}")
+    private int metricsServerPort;
 
     @Bean
     public StatsDClient metricClient(){
         logger.info("publish metrics: "+publishMetrics);
         if(publishMetrics)
-            return new NonBlockingStatsDClient("csye6225", publishServerHost,publishServerPort);
+            return new NonBlockingStatsDClient("csye6225", metricsServerHost, metricsServerPort);
 
         return new NoOpStatsDClient();
     }

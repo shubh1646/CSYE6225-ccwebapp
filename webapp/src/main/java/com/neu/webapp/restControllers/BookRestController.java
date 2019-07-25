@@ -42,7 +42,7 @@ public class BookRestController {
     public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) throws Exception{
         logger.info("Info Log");
         BookAdditionStatus bookAdditionStatus;
-        //statsDClient.incrementCounter("endpoint.book.http.post");
+        statsDClient.incrementCounter("endpoint.book.http.post");
         if (errors.hasErrors()) {
             bookAdditionStatus = bookService.getStockingStatus(errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bookAdditionStatus);
@@ -54,7 +54,7 @@ public class BookRestController {
     @GetMapping
     public Iterable<Book> getAllBooks() throws Exception{
         logger.warn("Warn Log");
-        //statsDClient.incrementCounter("endpoint.book.http.get");
+        statsDClient.incrementCounter("endpoint.book.http.get");
         Iterable<Book> allBooks = bookService.getAllBooks();
         return allBooks;
 
@@ -65,7 +65,7 @@ public class BookRestController {
     @PutMapping
     public ResponseEntity<?> updateBooks(@RequestBody Book book) throws Exception{
         //check id in json incomming payload
-        //statsDClient.incrementCounter("endpoint.book.http.put");
+        statsDClient.incrementCounter("endpoint.book.http.put");
         if(book.getId() == null || book == null ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Book does not hae an ID\" }");
         }
@@ -80,7 +80,7 @@ public class BookRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getBookPerId( @PathVariable UUID id) throws Exception{
-        //statsDClient.incrementCounter("endpoint.id.http.get");
+        statsDClient.incrementCounter("endpoint.id.http.get");
         Book book = bookService.getBookById(id);
         if(book != null){
             return ResponseEntity.status(HttpStatus.OK).body(book);
@@ -92,7 +92,7 @@ public class BookRestController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) throws Exception{
-        //statsDClient.incrementCounter("endpoint.id.http.delete");
+        statsDClient.incrementCounter("endpoint.id.http.delete");
         if (bookService.getBookById(id) != null) {
             bookService.deleteById(id);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
