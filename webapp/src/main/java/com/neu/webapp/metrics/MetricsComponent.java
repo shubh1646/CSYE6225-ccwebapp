@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MetricsComponent {
+public class MetricsClientBean {
 
-    private final static Logger logger = LoggerFactory.getLogger(MetricsComponent.class);
+    private final static Logger logger = LoggerFactory.getLogger(MetricsClientBean.class);
 
     @Value("${publish.metrics}")
     private boolean publishMetrics;
@@ -24,7 +24,7 @@ public class MetricsComponent {
     private int metricsServerPort;
 
     @Bean
-    public StatsDClient metricClient(){
+    public StatsDClient metricsClient(){
         logger.info("publish metrics: "+publishMetrics);
         if(publishMetrics)
             return new NonBlockingStatsDClient("csye6225", metricsServerHost, metricsServerPort);

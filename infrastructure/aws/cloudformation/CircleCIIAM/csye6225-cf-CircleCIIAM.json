@@ -10,49 +10,14 @@
         "csye6225-su19-gandhiman.me",
         "csye6225-su19-sharmashubh.me"
       ]
+    },
+    "cloudWatchAgentPolicyArn": {
+      "Description": "CloudWatchAgentServerPolicy ARN",
+      "Type": "String",
+      "Default": "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
     }
   },
   "Resources": {
-    "s3BucketId": {
-      "Type" : "AWS::S3::Bucket",
-      "DeletionPolicy" : "Delete",
-      "Properties" : {
-        "BucketName" : {"Fn::Sub" : "${domainName}.csye6225.com"},
-        "PublicAccessBlockConfiguration" : {
-          "BlockPublicAcls" : true,
-          "BlockPublicPolicy" : true,
-          "IgnorePublicAcls" : true,
-          "RestrictPublicBuckets" : true
-        },
-        "Tags" : [ {
-          "Key" : "Name",
-          "Value" : { "Fn::Sub": "${AWS::StackName}-S3-Bucket" }
-        } ]
-      }
-    },
-    "s3BucketCrudPolicyId": {
-      "Type" : "AWS::IAM::ManagedPolicy",
-      "DependsOn": "s3BucketId",
-      "Properties" : {
-        "ManagedPolicyName" : "EC2-S3-Access",
-        "PolicyDocument": {
-          "Version" : "2012-10-17",
-          "Statement": [
-            {
-              "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
-              "Effect": "Allow",
-              "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
-              "Resource": {
-                "Fn::Sub": [
-                  "${bucketArn}/*",
-                  { "bucketArn": {"Fn::GetAtt" : [ "s3BucketId", "Arn" ]} }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    },
     "circleciEc2AmiPolicyId": {
       "Type" : "AWS::IAM::ManagedPolicy",
       "Properties" : {
@@ -137,7 +102,7 @@
     },
     "codeDeployEC2ServiceRoleId": {
       "Type": "AWS::IAM::Role",
-      "DependsOn": ["codeDeployEc2S3PolicyId", "s3BucketCrudPolicyId"],
+      "DependsOn": "codeDeployEc2S3PolicyId",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [ {
@@ -148,7 +113,10 @@
         },
         "Path": "/",
         "RoleName": "CodeDeployEC2ServiceRole",
-        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"}, "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy" ],
+        "ManagedPolicyArns": [ 
+          {"Ref": "codeDeployEc2S3PolicyId"}, 
+          {"Ref": "cloudWatchAgentPolicyArn"}
+        ],
         "Tags" : [ {
           "Key" : "Name",
           "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }
@@ -258,13 +226,6 @@
       "Value": { "Ref": "codeDeployEC2ServiceRoleId" },
       "Export": {
         "Name": { "Fn::Sub": "${AWS::StackName}-codeDeployEC2ServiceRoleId" }
-      }
-    },
-    "s3BucketId": {
-      "Description": "Application S3 Bucket",
-      "Value": { "Ref": "s3BucketId" },
-      "Export": {
-        "Name": { "Fn::Sub": "${AWS::StackName}-s3BucketId" }
       }
     }
   }
