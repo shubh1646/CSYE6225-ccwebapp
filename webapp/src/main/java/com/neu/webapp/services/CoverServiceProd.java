@@ -35,7 +35,7 @@ public class CoverServiceProd implements CoverService {
     @Override
     public Cover getCoverById(UUID id) {
         Optional<Cover> temp = coverRepository.findById(id);
-        return temp.isEmpty() ? null : temp.get();
+        return temp.isPresent() ? temp.get() : null;
     }
 
     public  static File multipartToFile(MultipartFile imageFile, String imageName) throws IllegalStateException, IOException {

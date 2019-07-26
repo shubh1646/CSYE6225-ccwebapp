@@ -30,7 +30,7 @@ public class CoverServiceDev implements CoverService {
 
     public Cover getCoverById(UUID id) {
         Optional<Cover> temp = coverRepository.findById(id);
-        return temp.isEmpty() ? null : temp.get();
+        return temp.isPresent() ? temp.get() : null;
     }
 
     public String writeFile(MultipartFile imageFile, UUID id, String localPath) throws Exception{
