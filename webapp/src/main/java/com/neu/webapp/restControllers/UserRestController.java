@@ -24,11 +24,11 @@ import java.util.Calendar;
 
 @RestController
 public class UserRestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
     @Autowired
     private StatsDClient metricsClient;
-
+    
     @Autowired
     private UserService userService;
 

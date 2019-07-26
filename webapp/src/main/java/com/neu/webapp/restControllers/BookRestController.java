@@ -5,22 +5,21 @@ import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
 import com.neu.webapp.validators.BookValidator;
 import com.timgroup.statsd.StatsDClient;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/book")
 public class BookRestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BookRestController.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(BookRestController.class);
 
     @Autowired
     private StatsDClient metricsClient;
@@ -36,9 +35,10 @@ public class BookRestController {
         binder.setValidator(bookValidator);
     }
 
+
     // "Post request to create books ";
     @PostMapping
-    public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) {
+    public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) throws Exception{
         metricsClient.incrementCounter("endpoint./book.http.post");
         BookAdditionStatus bookAdditionStatus;
         if (errors.hasErrors()) {
