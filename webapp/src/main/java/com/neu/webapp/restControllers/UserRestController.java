@@ -24,11 +24,11 @@ import java.util.Calendar;
 
 @RestController
 public class UserRestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
     @Autowired
     private StatsDClient metricsClient;
-
+    
     @Autowired
     private UserService userService;
 
@@ -40,8 +40,6 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
-    @Value("${logging.file}")
-    private String loggingFile;
 
     @GetMapping("/")
     public ResponseEntity<String> welcome(HttpServletRequest request, Principal principal) throws Exception{
@@ -54,9 +52,8 @@ public class UserRestController {
     }
 
     @PostMapping("/user/register")
-    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) {
+public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) {
         metricsClient.incrementCounter("endpoint./user/register.http.post");
-
         RegistrationStatus registrationStatus;
         if(errors.hasErrors()) {
             LOGGER.warn("User Registration Failed");
