@@ -37,6 +37,7 @@ public class BookRestController {
     // "Post request to create books ";
     @PostMapping
     public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) throws Exception{
+        statsDClient.incrementCounter("endpoint.book.http.post");
         BookAdditionStatus bookAdditionStatus;
         if (errors.hasErrors()) {
             bookAdditionStatus = bookService.getStockingStatus(errors);
@@ -48,6 +49,7 @@ public class BookRestController {
     //   "get request to return all the books ";
     @GetMapping
     public Iterable<Book> getAllBooks() throws Exception{
+        statsDClient.incrementCounter("endpoint.book.http.get");
         Iterable<Book> allBooks = bookService.getAllBooks();
         return allBooks;
 
@@ -57,6 +59,7 @@ public class BookRestController {
     //PUT request to update all the books
     @PutMapping
     public ResponseEntity<?> updateBooks(@RequestBody Book book) throws Exception{
+        statsDClient.incrementCounter("endpoint.book.http.put");
         //check id in json incomming payload
         if(book.getId() == null || book == null ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Book does not hae an ID\" }");
@@ -71,7 +74,7 @@ public class BookRestController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getBookPerId( @PathVariable UUID id) throws Exception{
         Book book = bookService.getBookById(id);
-        statsDClient.incrementCounter("getting all books endpoint");
+        statsDClient.incrementCounter("endpoint.book.id.http.get");
         if(book != null){
             return ResponseEntity.status(HttpStatus.OK).body(book);
         }
@@ -83,6 +86,7 @@ public class BookRestController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) throws Exception{
+        statsDClient.incrementCounter("endpoint.book.id.http.delete");
         if (bookService.getBookById(id) != null) {
             bookService.deleteById(id);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);

@@ -4,6 +4,7 @@ import com.neu.webapp.models.Book;
 import com.neu.webapp.models.Cover;
 import com.neu.webapp.services.BookService;
 import com.neu.webapp.services.CoverService;
+import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,15 @@ import java.util.UUID;
 public class CoverRestController {
     @Autowired
     private BookService bookService;
+    @Autowired
+    private StatsDClient statsDClient;
 
     @Autowired
     private CoverService coverService;
 
     @GetMapping("/{idImage}")
     public ResponseEntity<?> getBookCover(@PathVariable UUID idBook, @PathVariable UUID idImage) throws Exception{
+        statsDClient.incrementCounter("endpoint.idimage.http.get");
         Book book = bookService.getBookById(idBook);
         if(book == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Book_ID\" }");
 
@@ -37,6 +41,7 @@ public class CoverRestController {
 
     @PostMapping
     public ResponseEntity<?> addCover(@PathVariable UUID idBook, @RequestParam(required = false) MultipartFile image, HttpServletRequest request) throws Exception{
+        statsDClient.incrementCounter("endpoint.idimage.http.post");
         if(!coverService.isImagePresent(image)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Select a file\" }");
         if(!coverService.isFileFormatRight(image.getContentType())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Image File Format Wrong\" }");
 
@@ -52,6 +57,7 @@ public class CoverRestController {
 
     @PutMapping("/{idImage}")
     public ResponseEntity<?> updateCover(@PathVariable UUID idBook, @PathVariable UUID idImage, @RequestParam(required = false) MultipartFile image, HttpServletRequest request) throws Exception{
+        statsDClient.incrementCounter("endpoint.idimage.http.put");
         if(!coverService.isImagePresent(image)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Select a file\" }");
         if(!coverService.isFileFormatRight(image.getContentType())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Image File Format Wrong\" }");
 
@@ -70,6 +76,7 @@ public class CoverRestController {
 
     @DeleteMapping("/{idImage}")
     public ResponseEntity<?> deleteCover(@PathVariable UUID idBook, @PathVariable UUID idImage) throws Exception{
+        statsDClient.incrementCounter("endpoint.idimage.http.delete");
         Book book = bookService.getBookById(idBook);
         if(book == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Wrong Book_ID\" }");
         if(!bookService.isBookImagePresent(book)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{ \"error\": \"Cover does not exist already perform POST to add cover\" }");

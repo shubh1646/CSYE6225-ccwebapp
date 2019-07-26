@@ -4,6 +4,7 @@ import com.neu.webapp.errors.RegistrationStatus;
 import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
 import com.neu.webapp.validators.UserValidator;
+import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,10 @@ public class UserRestController {
     private UserService userService;
 
     @Autowired
+    private StatsDClient statsDClient;
+
+
+    @Autowired
     private UserValidator userValidator;
 
     @InitBinder
@@ -32,6 +37,7 @@ public class UserRestController {
 
     @GetMapping("/")
     public ResponseEntity<String> welcome(HttpServletRequest request) throws Exception{
+        statsDClient.incrementCounter("endpoint./.http.get");
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String message = "Welcome  current time: "+sdf.format(cal.getTime());
@@ -42,6 +48,7 @@ public class UserRestController {
 
     @PostMapping("/user/register")
     public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+        statsDClient.incrementCounter("endpoint.user.register.http.post");
         RegistrationStatus registrationStatus;
 
         if(errors.hasErrors()) {
