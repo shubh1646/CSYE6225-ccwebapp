@@ -20,7 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/book")
 public class BookRestController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CoverRestController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BookRestController.class);
 
     @Autowired
     private StatsDClient metricsClient;

@@ -40,9 +40,6 @@ public class UserRestController {
         binder.setValidator(userValidator);
     }
 
-    @Value("${logging.file}")
-    private String loggingFile;
-
     @GetMapping("/")
     public ResponseEntity<String> welcome(HttpServletRequest request, Principal principal) throws Exception{
         metricsClient.incrementCounter("endpoint./.http.get");
@@ -56,7 +53,6 @@ public class UserRestController {
     @PostMapping("/user/register")
     public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) {
         metricsClient.incrementCounter("endpoint./user/register.http.post");
-
         RegistrationStatus registrationStatus;
         if(errors.hasErrors()) {
             LOGGER.warn("User Registration Failed");
