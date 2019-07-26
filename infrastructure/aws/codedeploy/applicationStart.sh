@@ -6,5 +6,6 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
     -m ec2 \
     -c file:/opt/cloudwatch-config.json \
     -s
+
 sudo systemctl start tomcat.service
 # sudo systemctl status tomcat

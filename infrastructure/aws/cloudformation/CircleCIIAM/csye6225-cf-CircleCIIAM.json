@@ -148,7 +148,7 @@
         },
         "Path": "/",
         "RoleName": "CodeDeployEC2ServiceRole",
-        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"} ],
+        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"}, "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy" ],
         "Tags" : [ {
           "Key" : "Name",
           "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }
