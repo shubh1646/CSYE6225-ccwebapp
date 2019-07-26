@@ -5,6 +5,7 @@ import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
 import com.neu.webapp.services.CoverService;
 import com.neu.webapp.validators.BookValidator;
+import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/bookshubham")
 public class BookRestController {
+
+    @Autowired
+    private StatsDClient statsDClient;
+
     @Autowired
     private BookService bookService;
 
@@ -66,12 +71,14 @@ public class BookRestController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getBookPerId( @PathVariable UUID id) throws Exception{
         Book book = bookService.getBookById(id);
+        statsDClient.incrementCounter("getting all books endpoint");
         if(book != null){
             return ResponseEntity.status(HttpStatus.OK).body(book);
         }
         else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Not Found\" }");
         }
+
     }
 
     @DeleteMapping("/{id}")

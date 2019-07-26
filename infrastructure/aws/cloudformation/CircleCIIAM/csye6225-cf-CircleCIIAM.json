@@ -12,7 +12,15 @@
       ]
     }
   },
+
+
+
+
+
+
+
   "Resources": {
+
     "s3BucketId": {
       "Type" : "AWS::S3::Bucket",
       "DeletionPolicy" : "Delete",
@@ -30,6 +38,8 @@
         } ]
       }
     },
+
+
     "s3BucketCrudPolicyId": {
       "Type" : "AWS::IAM::ManagedPolicy",
       "DependsOn": "s3BucketId",
@@ -53,6 +63,11 @@
         }
       }
     },
+
+
+
+
+  
     "circleciEc2AmiPolicyId": {
       "Type" : "AWS::IAM::ManagedPolicy",
       "Properties" : {
@@ -148,7 +163,7 @@
         },
         "Path": "/",
         "RoleName": "CodeDeployEC2ServiceRole",
-        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"} ],
+        "ManagedPolicyArns": [ {"Ref": "codeDeployEc2S3PolicyId"}, {"Ref": "s3BucketCrudPolicyId"},"arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy" ],
         "Tags" : [ {
           "Key" : "Name",
           "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }
