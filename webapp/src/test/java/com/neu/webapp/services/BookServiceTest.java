@@ -22,11 +22,18 @@ public class BookServiceTest {
     @Mock
     BookRepository bookRepositoryTest;
 
+
     private static Book BOOK;
 
     @Before
     public void setUp() {
-        this.BOOK = new Book(UUID.randomUUID(), "The Adventures of Sherlock Holmes",  "ISB123", "Arthur Conan Doyle",(short)12);
+        Book book = new Book();
+        book.setId(UUID.randomUUID());
+        book.setTitle("The Adventures of Sherlock Holmes");
+        book.setIsbn("ISB123");
+        book.setAuthor("Arthur Conan Doyle");
+        book.setQuantity((short)12);
+        this.BOOK = book;
     }
 
     @Test
@@ -39,6 +46,7 @@ public class BookServiceTest {
 
    @Test
     public void deleteBookByIdTest(){
+        Mockito.when(bookRepositoryTest.findById(BOOK.getId())).thenReturn(Optional.of(BOOK));
         bookServiceTest.deleteById(BOOK.getId());
         Mockito.verify(bookRepositoryTest).deleteById(BOOK.getId());
    }

@@ -8,6 +8,9 @@ import com.neu.webapp.models.Book;
 import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
 import com.neu.webapp.repositories.CoverRepository;
+import com.neu.webapp.restControllers.CoverRestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -16,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +28,8 @@ import java.util.UUID;
 @Service
 @Profile("prod")
 public class CoverServiceProd implements CoverService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoverRestController.class);
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -58,10 +65,16 @@ public class CoverServiceProd implements CoverService {
                             .withExpiration(expiration);
             URL url = s3.generatePresignedUrl(generatePresignedUrlRequest);
             return new Cover(cover.getId(), url.toString());
-        } catch(AmazonServiceException e) {
-            e.printStackTrace();
-        } catch(SdkClientException e) {
-            e.printStackTrace();
+        } catch(AmazonServiceException exc) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            LOGGER.error(exc.getMessage()+sw.toString());
+        } catch(SdkClientException exc) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            LOGGER.error(exc.getMessage()+sw.toString());
         }
         return null;
     }
@@ -72,9 +85,11 @@ public class CoverServiceProd implements CoverService {
         File file = multipartToFile(imageFile, fileName);
         try {
             s3.putObject(BUCKET_NAME, fileName, file);
-        } catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
-            System.exit(1);
+        } catch (AmazonServiceException exc) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            LOGGER.error(exc.getMessage()+sw.toString());
         }
         return fileName;
     }
@@ -85,31 +100,35 @@ public class CoverServiceProd implements CoverService {
         Cover cover = new Cover(path);
         book.setImage(cover);
         bookRepository.save(book);
-        return book.getImage();
+        return getPresignedUrl(book.getImage().getId());
     }
 
     @Override
-    public void deleteFile(String fileName) throws Exception {
+    public void deleteFile(String fileName) {
         try {
             s3.deleteObject(BUCKET_NAME, fileName);
-        }catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
-            System.exit(1);
+        }catch (AmazonServiceException exc) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            LOGGER.error(exc.getMessage()+sw.toString());
         }
     }
 
     @Override
-    public void updateCover(Book book, Cover cover, MultipartFile imageFile, String localPath) throws Exception{
+    public void updateCover(Book book, Cover cover, MultipartFile imageFile, String localPath) throws Exception {
         deleteFile(cover.getUrl());
         String path = writeFile(imageFile, book.getId(), localPath);
         cover.setUrl(path);
-        coverRepository.save(cover);
+        book.setImage(cover);
+        bookRepository.save(book);
     }
 
     @Override
     public void deleteCover(Book book, Cover cover) throws Exception{
         deleteFile(cover.getUrl());
         book.setImage(null);
-        coverRepository.delete(cover);
+        bookRepository.save(book);
+        coverRepository.deleteById(cover.getId());
     }
 }

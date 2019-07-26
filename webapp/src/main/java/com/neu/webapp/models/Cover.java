@@ -2,6 +2,7 @@ package com.neu.webapp.models;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@ToString
 public class Cover {
     @Id
     @GeneratedValue

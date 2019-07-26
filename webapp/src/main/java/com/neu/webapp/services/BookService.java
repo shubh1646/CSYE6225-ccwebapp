@@ -4,40 +4,47 @@ import com.neu.webapp.errors.BookAdditionStatus;
 import com.neu.webapp.models.Book;
 import com.neu.webapp.models.Cover;
 import com.neu.webapp.repositories.BookRepository;
+import com.neu.webapp.restControllers.CoverRestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class BookService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoverRestController.class);
+
     @Autowired
     private BookRepository bookRepository;
 
     @Autowired
     private CoverService coverService;
 
-    public Iterable<Book> getAllBooks() {
+    public List<Book> getAllBooks() {
         Iterable<Book> books = bookRepository.findAll();
+        List<Book> list = new ArrayList<>();
         for(Book book: books) {
             Cover cover = book.getImage();
-            if(cover!=null) {
-                UUID id = cover.getId();
-                book.setImage(coverService.getPresignedUrl(id));
-            }
+            Book tempBook = new Book(book);
+            if(cover!=null) tempBook.setImage(coverService.getPresignedUrl(cover.getId()));
+            list.add(tempBook);
         }
-        return books;
+        return list;
     }
 
     public Book CreateBook(Book book) {
-        Book b = bookRepository.save(book);
+        bookRepository.save(book);
         return book;
-
-
     }
 
     public void UpdateBook(Book book) {
@@ -49,25 +56,36 @@ public class BookService {
         if (book.getIsbn() != null)  upBook.setIsbn(book.getIsbn());
         if (book.getTitle() != null) upBook.setTitle(book.getTitle());
         if (book.getQuantity() != null) upBook.setQuantity(book.getQuantity());
-//        if (book.getImage() != null && !book.equals(upBook)) upBook.setImage(book.getImage());
 
         bookRepository.save(upBook);
     }
 
     public Book getBookById(UUID id) {
         Optional<Book> temp = bookRepository.findById(id);
-//        return temp.isEmpty() ? null : temp.get();
-        Book book = null;
-        if(temp.isPresent()) {
-            book = temp.get();
-            Cover cover = book.getImage();
-            if(cover!=null) book.setImage(coverService.getPresignedUrl(cover.getId()));
-        }
-        return book;
+        return (temp.isPresent()) ? temp.get() : null;
     }
 
-    public void deleteById(UUID id){
-        bookRepository.deleteById(id);
+    public Book getBook(UUID id){
+        Book book = getBookById(id);
+        if (book!=null) {
+            Book temp = new Book(book);
+            if(isBookImagePresent(book)) temp.setImage(coverService.getPresignedUrl(book.getImage().getId()));
+            return temp;
+        }
+        return null;
+    }
+
+    public void deleteById(UUID id) {
+        try{
+            Book book = getBookById(id);
+            if (isBookImagePresent(book)) coverService.deleteFile(book.getImage().getUrl());
+            bookRepository.deleteById(id);
+        }catch(Exception exc) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            LOGGER.error(exc.getMessage()+sw.toString());
+        }
     }
 
     public BookAdditionStatus getStockingStatus(BindingResult errors) {
