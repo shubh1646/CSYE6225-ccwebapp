@@ -26,9 +26,9 @@ public class MetricsClientBean {
     @Bean
     public StatsDClient metricsClient(){
         logger.info("publish metrics: "+publishMetrics);
-        if(publishMetrics)
+        if(publishMetrics) {
             return new NonBlockingStatsDClient("csye6225", metricsServerHost, metricsServerPort);
-
+        }
         return new NoOpStatsDClient();
     }
 
