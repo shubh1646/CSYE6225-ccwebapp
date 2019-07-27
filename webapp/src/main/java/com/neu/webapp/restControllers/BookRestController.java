@@ -17,7 +17,7 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bookshubham")
+@RequestMapping("/book")
 public class BookRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(BookRestController.class);
 
