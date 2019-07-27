@@ -88,12 +88,9 @@ public class BookRestController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) throws Exception{
-         metricsClient.incrementCounter("endpoint.book.id.http.delete");
-        if (bookService.getBookById(id) != null) {
-            bookService.deleteById(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
-        }
-        else{
+        metricsClient.incrementCounter("endpoint./book/{id}.http.delete");
+        if (bookService.getBookById(id) == null) {
+            LOGGER.warn("No book with id: "+id.toString()+" present");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Bad Request\" }");
         }
         LOGGER.info("Book deleted");

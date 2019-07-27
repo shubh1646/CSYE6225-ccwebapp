@@ -5,8 +5,11 @@ import com.neu.webapp.models.Cover;
 import com.neu.webapp.services.BookService;
 import com.neu.webapp.services.CoverService;
 import com.timgroup.statsd.StatsDClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,15 +28,13 @@ public class CoverRestController {
 
     @Autowired
     private BookService bookService;
-    @Autowired
-    private StatsDClient statsDClient;
 
     @Autowired
     private CoverService coverService;
 
     @GetMapping("/{idImage}")
     public ResponseEntity<?> getBookCover(@PathVariable UUID idBook, @PathVariable UUID idImage) throws Exception{
-         metricsClient.incrementCounter("endpoint.idimage.http.get");
+        metricsClient.incrementCounter("endpoint.idimage.http.get");
         Book book = bookService.getBookById(idBook);
         Cover cover = coverService.getCoverById(idImage);
 
@@ -93,7 +94,7 @@ public class CoverRestController {
 
     @DeleteMapping("/{idImage}")
     public ResponseEntity<?> deleteCover(@PathVariable UUID idBook, @PathVariable UUID idImage) throws Exception{
-      metricsClient.incrementCounter("endpoint.idimage.http.delete");
+        metricsClient.incrementCounter("endpoint.idimage.http.delete");
         Book book = bookService.getBookById(idBook);
         Cover cover = coverService.getCoverById(idImage);
 
