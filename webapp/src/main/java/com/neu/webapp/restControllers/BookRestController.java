@@ -39,7 +39,7 @@ public class BookRestController {
     // "Post request to create books ";
     @PostMapping
     public ResponseEntity<?> createBooks(@Valid @RequestBody Book book, BindingResult errors) throws Exception{
-        metricsClient.incrementCounter("endpoint./book.http.post");
+       metricsClient.incrementCounter("endpoint.book.http.post");
         BookAdditionStatus bookAdditionStatus;
         if (errors.hasErrors()) {
             LOGGER.warn("Book validation failed");
@@ -52,8 +52,8 @@ public class BookRestController {
 
     //   "get request to return all the books ";
     @GetMapping
-    public Iterable<Book> getAllBooks() {
-        metricsClient.incrementCounter("endpoint./book.http.get");
+    public Iterable<Book> getAllBooks() throws Exception{
+         metricsClient.incrementCounter("endpoint.book.http.get");
         Iterable<Book> allBooks = bookService.getAllBooks();
         LOGGER.info("All Books fetched");
         return allBooks;
@@ -74,22 +74,26 @@ public class BookRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getBookPerId( @PathVariable UUID id) {
-        metricsClient.incrementCounter("endpoint./book/{id}.http.get");
-        Book book = bookService.getBook(id);
-        if(book == null) {
-            LOGGER.warn("No book with id: "+id.toString()+" present");
+    public ResponseEntity<?> getBookPerId( @PathVariable UUID id) throws Exception{
+        Book book = bookService.getBookById(id);
+         metricsClient.incrementCounter("endpoint.book.id.http.get");
+        if(book != null){
+            return ResponseEntity.status(HttpStatus.OK).body(book);
+        }
+        else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Not Found\" }");
         }
-        LOGGER.info("Book fetched");
-        return ResponseEntity.status(HttpStatus.OK).body(book);
+
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) {
-        metricsClient.incrementCounter("endpoint./book/{id}.http.delete");
-        if (bookService.getBookById(id) == null) {
-            LOGGER.warn("No book with id: "+id.toString()+" present");
+    public ResponseEntity<?> deleteBookById( @PathVariable("id") UUID id) throws Exception{
+         metricsClient.incrementCounter("endpoint.book.id.http.delete");
+        if (bookService.getBookById(id) != null) {
+            bookService.deleteById(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        }
+        else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"error\": \"Bad Request\" }");
         }
         LOGGER.info("Book deleted");

@@ -17,6 +17,13 @@
       "Default": "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
     }
   },
+
+
+
+
+
+
+
   "Resources": {
     "circleciEc2AmiPolicyId": {
       "Type" : "AWS::IAM::ManagedPolicy",

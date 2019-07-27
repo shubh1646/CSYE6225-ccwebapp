@@ -33,6 +33,10 @@ public class UserRestController {
     private UserService userService;
 
     @Autowired
+    private StatsDClient statsDClient;
+
+
+    @Autowired
     private UserValidator userValidator;
 
     @InitBinder
@@ -41,9 +45,8 @@ public class UserRestController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<String> welcome(HttpServletRequest request, Principal principal) throws Exception{
+    public ResponseEntity<String> welcome(HttpServletRequest request) throws Exception{
         metricsClient.incrementCounter("endpoint./.http.get");
-        LOGGER.info(principal.getName()+" User Authenticated");
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String message = "Welcome  current time: "+sdf.format(cal.getTime());
@@ -51,8 +54,8 @@ public class UserRestController {
     }
 
     @PostMapping("/user/register")
-    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) {
-        metricsClient.incrementCounter("endpoint./user/register.http.post");
+    public ResponseEntity<RegistrationStatus> register(@Valid @RequestBody User user, BindingResult errors, HttpServletResponse response) throws Exception{
+        metricsClient.incrementCounter("endpoint./user./register.http.post");
         RegistrationStatus registrationStatus;
         if(errors.hasErrors()) {
             LOGGER.warn("User Registration Failed");
