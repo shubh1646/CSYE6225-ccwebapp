@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bookshubham/{idBook}/image")
+@RequestMapping("/book/{idBook}/image")
 @Validated
 public class CoverRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoverRestController.class);
