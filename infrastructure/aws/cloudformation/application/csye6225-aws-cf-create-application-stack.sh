@@ -6,7 +6,6 @@ echo "enter the name of your Virtual Private Cloud (networking) stack(alphanumer
 read NetworkStackName
 echo "enter the name of your CircleCI Roles and Policies stack(alphanumeric)"
 read CircleCIStackName
-
 if [ -z "$applicationStackName" ] || [ -z "$NetworkStackName" ] || [ -z "$CircleCIStackName" ]
 then
     echo "Failed: either Application Stack Name or Networking Stack Name or CircleCI Stack Name Null"
@@ -18,6 +17,13 @@ read amiId
 if [ -z "$amiId" ]
 then
     echo "Failed: entered amiId is Null"
+    exit
+fi
+echo "enter your domain name"
+read domainName
+if [ -z "$domainName" ]
+then
+    echo "Failed: entered domainName is Null"
     exit
 fi
 
@@ -46,6 +52,7 @@ status=$(aws cloudformation create-stack --stack-name $applicationStackName \
 ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
 ParameterKey=CircleCIStackName,ParameterValue=$CircleCIStackName \
+ParameterKey=domainName,ParameterValue=$domainName \
 --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]

@@ -13,9 +13,59 @@
     "CircleCIStackName": {
       "Description": "CircleCI Roles and Policies Stack Name",
       "Type": "String"
+    },
+    "domainName": {
+      "Description": "domain Name for S3 Bucket Naming",
+      "Type": "String",
+      "AllowedValues": [
+        "csye6225-su19-sebastianc.me",
+        "csye6225-su19-gandhiman.me",
+        "csye6225-su19-sharmashubh.me"
+      ]
     }
   },
   "Resources": {
+    "s3BucketId": {
+      "Type" : "AWS::S3::Bucket",
+      "DeletionPolicy" : "Delete",
+      "Properties" : {
+        "BucketName" : {"Fn::Sub" : "${domainName}.csye6225.com"},
+        "PublicAccessBlockConfiguration" : {
+          "BlockPublicAcls" : true,
+          "BlockPublicPolicy" : true,
+          "IgnorePublicAcls" : true,
+          "RestrictPublicBuckets" : true
+        },
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-S3-Bucket" }
+        } ]
+      }
+    },
+    "s3BucketCrudPolicyId": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "DependsOn": "s3BucketId",
+      "Properties" : {
+        "ManagedPolicyName" : "EC2-S3-Access",
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
+              "Effect": "Allow",
+              "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+              "Resource": {
+                "Fn::Sub": [
+                  "${bucketArn}/*",
+                  { "bucketArn": {"Fn::GetAtt" : [ "s3BucketId", "Arn" ]} }
+                ]
+              }
+            }
+          ]
+        },
+        "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }]
+      }
+    },
     "WebappSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -172,13 +222,14 @@
               "echo \"fi\" >> /opt/tomcat/bin/setenv.sh\n",
               "echo \"JAVA_OPTS=\\\"\\${JAVA_OPTS} -Ddomain=",{"Fn::GetAtt": ["rdsInstanceId", "Endpoint.Address"]},
               " -Ddatabase=csye6225 -DsqlUsername=csye6225master -DsqlPassword=csye6225password",
-              " -Dbucket=", { "Fn::ImportValue" : {"Fn::Sub": "${CircleCIStackName}-s3BucketId" } },
+              " -Dbucket=", { "Ref" : "s3BucketId" },
               "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
               "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s",
               "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/amazon-cloudwatch-agent.json\n",
               "sudo systemctl start tomcat"
-            ]
-            ]
+            ] ]
           }
         },
         "Tags" : [

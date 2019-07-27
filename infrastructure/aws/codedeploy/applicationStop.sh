@@ -2,4 +2,4 @@
 
 #stoping tomcat
 sudo systemctl stop tomcat.service
-# sudo systemctl status tomcat
+sudo systemctl stop amazon-cloudwatch-agent.service

@@ -2,6 +2,7 @@ package com.neu.webapp.models;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@ToString
 public class Book {
     @Id
     @GeneratedValue
@@ -25,17 +27,26 @@ public class Book {
     private Short quantity;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Cover image = null;
+    private Cover image;
 
     public Book() {
     }
 
-    public Book(UUID id, String title, String isbn, String author, Short quantity) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-        this.quantity = quantity;
+//    public Book(Book book, Cover image) {
+//        this.id = book.getId();
+//        this.title = book.getTitle();
+//        this.author = book.getAuthor();
+//        this.isbn = book.getIsbn();
+//        this.quantity = book.getQuantity();
+//        this.image = image;
+//    }
+
+    public Book(Book book) {
+        this.id = book.getId();
+        this.title = book.getTitle();
+        this.author = book.getAuthor();
+        this.isbn = book.getIsbn();
+        this.quantity = book.getQuantity();
     }
 }
 

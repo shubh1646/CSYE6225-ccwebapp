@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo systemctl stop tomcat.service
-# sudo systemctl status tomcat
+sudo systemctl stop amazon-cloudwatch-agent.service
 
 #removing previous build ROOT folder
 sudo rm -rf /opt/tomcat/webapps/ROOT
