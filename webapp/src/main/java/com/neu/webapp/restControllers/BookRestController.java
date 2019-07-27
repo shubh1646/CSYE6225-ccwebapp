@@ -5,11 +5,8 @@ import com.neu.webapp.models.Book;
 import com.neu.webapp.services.BookService;
 import com.neu.webapp.validators.BookValidator;
 import com.timgroup.statsd.StatsDClient;
-<<<<<<< HEAD
-=======
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
->>>>>>> 40d823b5f2e585d80fecd286265ce21acb5e889e
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
