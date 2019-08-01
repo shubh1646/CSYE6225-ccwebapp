@@ -244,6 +244,68 @@
         ]
       }
     },
+
+
+    "SNSTopic": {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+         "DisplayName" : "MySNSTopic",
+         "TopicName" : "password_reset",
+         "Subscription": [
+	         {
+				  "Endpoint": {
+				    "Fn::GetAtt": [ "LambdaFunction", "Arn" ]
+				  },
+				  "Protocol": "lambda"
+				}
+			      ]
+		}
+      },
+
+      "LambdaResourcePolicy": {
+        "Type": "AWS::Lambda::Permission",
+        "Properties": {
+          "FunctionName" : { "Ref" : "LambdaFunction" },
+          "Principal": "sns.amazonaws.com",
+          "Action": "lambda:InvokeFunction",
+          "SourceArn" : {
+             "Fn::Join" : [
+                ":",
+                [
+                  "arn:aws:sns:us-east-1",
+                    {
+                       "Ref": "AWS::AccountId"
+                    },
+                       "password_reset"
+                    ]
+                ]
+          }
+        }
+      },
+
+
+      "LambdaFunction": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+         "Handler": "LogEvent::handleRequest",
+         "Role": { "Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+         "Code": {
+           "S3Bucket": { "Ref" : "bucketName" },
+           "S3Key": { "Ref" : "bucketKey" }         
+         },
+         "Runtime": "java8",
+         "Environment" : { 
+            "Variables" : {
+               "Domain" : { "Ref" : "domainName" }
+            }
+         },
+         "FunctionName" : "csye6225_spring2019",
+         "MemorySize" : 256,
+         "Timeout": 180
+         
+        }
+      }
+   },
     "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
