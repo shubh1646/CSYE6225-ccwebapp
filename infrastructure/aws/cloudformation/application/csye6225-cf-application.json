@@ -176,7 +176,6 @@
         "Roles": [
           { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }
         ],
-        
         "InstanceProfileName": "ec2InstanceProfile"
       }
     },
@@ -263,50 +262,29 @@
 		}
       },
 
-      "LambdaResourcePolicy": {
-        "Type": "AWS::Lambda::Permission",
-        "Properties": {
-          "FunctionName" : { "Ref" : "LambdaFunction" },
-          "Principal": "sns.amazonaws.com",
-          "Action": "lambda:InvokeFunction",
-          "SourceArn" : {
-             "Fn::Join" : [
-                ":",
-                [
-                  "arn:aws:sns:us-east-1",
-                    {
-                       "Ref": "AWS::AccountId"
-                    },
-                       "password_reset"
-                    ]
-                ]
-          }
-        }
-      },
 
 
-      "LambdaFunction": {
-        "Type": "AWS::Lambda::Function",
-        "Properties": {
-         "Handler": "EmailEvent",  
-         "Role": {"Fn::GetAtt":[{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-LambdaExecutionRole"}},"Arn"]},
-         "Code": {
-           "S3Bucket": "code-deploy.csye6225-su19-sharmashubh.me" ,
-           "S3Key":  "email.zip"         
-         },
-         "Runtime": "java8",
-         "Environment" : { 
-            "Variables" : {
-               "Domain" : { "Ref" : "domainName" }
-            }
-         },
-         "FunctionName" : "csye6225_spring2019",
-         "MemorySize" : 256,
-         "Timeout": 180
-         
-        }
-      },
-   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
@@ -329,10 +307,8 @@
         }
       }
     }
-  }
-  ,
+  },
   "Outputs": {
 
   }
-
-} 
+}

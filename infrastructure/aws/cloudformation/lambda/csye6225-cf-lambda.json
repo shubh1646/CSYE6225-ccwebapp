@@ -1,0 +1,157 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for a Lambda stack for Email purposes",
+  "Parameters": {
+    "ApplicationStackName": {
+      "Description": "Application Stack Name",
+      "Type": "String"
+    },
+    "CircleCIStackName": {
+      "Description": "CircleCI Roles and Policies Stack Name",
+      "Type": "String"
+    },
+    "domainName": {
+      "Description": "domain Name for S3 Bucket Naming",
+      "Type": "String",
+      "AllowedValues": [
+        "csye6225-su19-sebastianc.me",
+        "csye6225-su19-gandhiman.me",
+        "csye6225-su19-sharmashubh.me"
+      ]
+    }
+  },
+  "Resources": {
+    "lambdaExecutionRoleId": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": { "Service": "lambda.amazonaws.com" },
+            "Action": "sts:AssumeRole"
+          } ]
+        },
+        "Path": "/",
+        "RoleName": "LambdaExecutionRole",
+        "ManagedPolicyArns": [ 
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-LambdaExecutionRoleId" }
+        } ]
+      }
+    },
+    "lambdaPolicy" : {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "DependsOn": "topicId",
+      "Properties" : {
+          "ManagedPolicyName" : "lambdaPolicy",
+          "PolicyDocument" :  {
+            "Version" : "2012-10-17",
+            "Statement" : [
+              {
+                "Sid" : "LambdaDynamoDBAccess",
+                "Effect" : "Allow",
+                "Action" : ["dynamodb:GetItem", "dynamodb:PutItem"],
+                "Resource" : {
+                  "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBArn"}
+                }
+              },
+              {
+                "Sid" : "LambdaSESAccess",
+                "Effect": "Allow",
+                "Action": [
+                  "ses:VerifyEmailAddress",
+                  "ses:SendEmail",
+                  "ses:SendRawEmail"
+                ],
+                "Resource": {"Fn::Sub": "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"}
+              },
+              {
+                "Sid" : "LambdaS3Access",
+                "Effect": "Allow",
+                "Action": [ "s3:GetObject"],
+                "Resource": { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" }
+              }
+            ]
+          },
+          "Roles": [{"Ref": "lambdaExecutionRoleId"}]
+      }
+    },
+    "lambdaFunctionId": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "csye6225_summer2019",
+        "Code": {
+          "S3Bucket": { "Fn::Sub": "code-deploy.${domainName}" },
+          "S3Key": "email-1.0-SNAPSHOT.jar"
+        },
+        "Handler": "EmailEvent::handleRequest",
+        "Environment": {
+          "Variables": {
+            "domain": {"Ref": "domainName"},
+            "table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
+          }
+        },      
+        "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
+        "Runtime": "java8",
+        "MemorySize" : 128,
+        "Timeout": 180,
+        "Tags" : [
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Sub": "${AWS::StackName}-EmailLambda" }
+          },
+          {
+            "Key" : "Application Role",
+            "Value" : "Email Lambda"
+          }
+        ]
+      }
+    },
+    "topicId": {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+          "Subscription" : [{
+              "Endpoint" : { "Fn::GetAtt": [ "lambdaFunctionId", "Arn" ] },
+              "Protocol" : "lambda"            
+          } ],
+          "TopicName" : "email"
+        }
+    },
+    "topicPolicy" : {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "DependsOn": "topicId",
+      "Properties" : {
+          "ManagedPolicyName" : "TopicPolicy",
+          "PolicyDocument" :  {
+            "Version" : "2012-10-17",
+            "Statement" : [
+              {
+                "Sid" : "AllowEC2ToPublishToSNSTopic",
+                "Effect" : "Allow",
+                "Action" : [ "sns:Publish", "sns:CreateTopic"],
+                "Resource" : {"Ref": "topicId"}
+              } 
+            ]
+          },
+          "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
+      }
+    },
+    "lambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "DependsOn": "lambdaFunctionId",
+      "Properties": {
+        "FunctionName": "csye6225_summer2019",
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceAccount": {"Ref": "AWS::AccountId"},
+        "SourceArn": {"Ref": "topicId"}
+      }
+    }
+  },
+  "Outputs": {
+
+  }
+}
