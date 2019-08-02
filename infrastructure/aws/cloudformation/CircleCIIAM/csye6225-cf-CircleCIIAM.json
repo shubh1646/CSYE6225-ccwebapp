@@ -15,14 +15,14 @@
       "Description": "CloudWatchAgentServerPolicy ARN",
       "Type": "String",
       "Default": "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+    },
+    "SNSFullAcessPolicyArn": {
+      "Description": "SNSFullAcessPolicyPolicy ARN",
+      "Type": "String",
+      "Default": "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
     }
+
   },
-
-
-
-
-
-
 
   "Resources": {
     "circleciEc2AmiPolicyId": {
@@ -122,7 +122,8 @@
         "RoleName": "CodeDeployEC2ServiceRole",
         "ManagedPolicyArns": [ 
           {"Ref": "codeDeployEc2S3PolicyId"}, 
-          {"Ref": "cloudWatchAgentPolicyArn"}
+          {"Ref": "cloudWatchAgentPolicyArn"},
+          {"Ref": "SNSFullAcessPolicyArn"}
         ],
         "Tags" : [ {
           "Key" : "Name",
@@ -150,6 +151,48 @@
         } ]
       }
     },
+
+    "LambdaExecutionRole" :
+    {  "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "LambdaExecutionRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "ManagedPolicyArns": [
+	        "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole", 
+			  "arn:aws:iam::aws:policy/AmazonSESFullAccess", 
+			  "arn:aws:iam::aws:policy/AmazonSNSFullAccess", 
+			  "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+			  "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+        ]
+      }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    ,
     "applicationId": {
       "Type" : "AWS::CodeDeploy::Application",
       "Properties" : {
