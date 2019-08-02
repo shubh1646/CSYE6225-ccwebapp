@@ -8,7 +8,7 @@ then
     exit
 fi
 
-echo "enter your domainName.csye6225.com for s3 bucket"
+echo "enter your code-deploy.domainName for s3 bucket"
 read domainName
 if [ -z "$domainName" ]
 then
