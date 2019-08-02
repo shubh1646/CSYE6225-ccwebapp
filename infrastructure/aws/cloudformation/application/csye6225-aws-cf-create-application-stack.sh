@@ -53,7 +53,7 @@ ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
 ParameterKey=CircleCIStackName,ParameterValue=$CircleCIStackName \
 ParameterKey=domainName,ParameterValue=$domainName \
---capabilities CAPABILITY_NAMED_IAM)
+--capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]
 then

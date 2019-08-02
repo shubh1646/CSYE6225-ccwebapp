@@ -114,7 +114,7 @@
           } ]
         },
         "Path": "/",
-        "RoleName": "ECExecutionRole",
+        "RoleName": "EC2ExecutionRole",
         "ManagedPolicyArns": [ 
           {"Ref": "codeDeployEc2S3PolicyId"}, 
           {"Ref": "cloudWatchAgentPolicyArn"}

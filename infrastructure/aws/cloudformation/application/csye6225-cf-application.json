@@ -274,6 +274,13 @@
       "Export": {
         "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBArn" }
       }
+    },
+    "dynamoDBTable": {
+      "Description": "DynamoDB Table Name",
+      "Value": {"Ref": "dynamoDBId"},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBTable" }
+      }
     }
   }
 }

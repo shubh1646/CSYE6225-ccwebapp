@@ -80,20 +80,20 @@ public class UserRestController {
 
     }
     @PostMapping("/reset")
-    public ResponseEntity<String> PasswordReset(@RequestBody String email) {
+    public ResponseEntity<String> PasswordReset(@RequestBody User user) throws Exception{
         metricsClient.incrementCounter("endpoint./.http.reset");
 
 
-        UserDetails u = userService.loadUserByUsername(email);
+        UserDetails u = userService.loadUserByUsername(user.getEmailId());
 
         if (u != null) {
 
             AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
 
-            CreateTopicResult topicResult = snsClient.createTopic("SESTopic");
+            CreateTopicResult topicResult = snsClient.createTopic("email");
             String topicArn = topicResult.getTopicArn();
 
-            final PublishRequest publishRequest = new PublishRequest(topicArn, email);
+            final PublishRequest publishRequest = new PublishRequest(topicArn, user.getEmailId());
             final PublishResult publishResponse = snsClient.publish(publishRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body("");
         } else {

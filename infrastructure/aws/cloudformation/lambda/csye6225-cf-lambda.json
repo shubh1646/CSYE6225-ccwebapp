@@ -46,7 +46,7 @@
       "Type" : "AWS::IAM::ManagedPolicy",
       "DependsOn": "topicId",
       "Properties" : {
-          "ManagedPolicyName" : "DynamoDBPolicy",
+          "ManagedPolicyName" : "lambdaPolicy",
           "PolicyDocument" :  {
             "Version" : "2012-10-17",
             "Statement" : [
@@ -85,13 +85,13 @@
         "FunctionName": "csye6225_summer2019",
         "Code": {
           "S3Bucket": { "Fn::Sub": "code-deploy.${domainName}" },
-          "S3Key": "emailApp.zip"
+          "S3Key": "email-1.0-SNAPSHOT.jar"
         },
         "Handler": "EmailEvent",
         "Environment": {
           "Variables": {
             "domain": {"Ref": "domainName"},
-            "Table": "csye6225"
+            "Table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
           }
         },      
         "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
@@ -114,7 +114,7 @@
       "Type" : "AWS::SNS::Topic",
       "Properties" : {
           "Subscription" : [{
-              "Endpoint" : { "Fn::GetAtt": [ "lambdaFuncionId", "Arn" ] },
+              "Endpoint" : { "Fn::GetAtt": [ "lambdaFunctionId", "Arn" ] },
               "Protocol" : "lambda"            
           } ],
           "TopicName" : "email"
@@ -136,12 +136,12 @@
               } 
             ]
           },
-          "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }]
+          "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
       }
     },
     "lambdaPermission": {
       "Type": "AWS::Lambda::Permission",
-      "DependsOn": "lambdaFuncionId",
+      "DependsOn": "lambdaFunctionId",
       "Properties": {
         "FunctionName": "csye6225",
         "Action": "lambda:InvokeFunction",
