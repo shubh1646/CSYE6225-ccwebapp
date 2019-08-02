@@ -176,6 +176,7 @@
         "Roles": [
           { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }
         ],
+        
         "InstanceProfileName": "ec2InstanceProfile"
       }
     },
@@ -287,11 +288,11 @@
       "LambdaFunction": {
         "Type": "AWS::Lambda::Function",
         "Properties": {
-         "Handler": "LogEvent::handleRequest",
-         "Role": { "Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+         "Handler": "EmailEvent",  
+         "Role": {"Fn::GetAtt":[{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-LambdaExecutionRole"}},"Arn"]},
          "Code": {
-           "S3Bucket": { "Ref" : "bucketName" },
-           "S3Key": { "Ref" : "bucketKey" }         
+           "S3Bucket": "code-deploy.csye6225-su19-sharmashubh.me" ,
+           "S3Key":  "email.zip"         
          },
          "Runtime": "java8",
          "Environment" : { 
@@ -304,8 +305,8 @@
          "Timeout": 180
          
         }
-      }
-   },
+      },
+   
     "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
@@ -328,8 +329,10 @@
         }
       }
     }
-  },
+  }
+  ,
   "Outputs": {
 
   }
-}
+
+} 
