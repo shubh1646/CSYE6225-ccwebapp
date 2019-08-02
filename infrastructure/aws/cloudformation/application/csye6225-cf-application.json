@@ -291,13 +291,13 @@
         "TableName": "csye6225",
         "AttributeDefinitions": [
           {
-            "AttributeName": "id",
+            "AttributeName": "emailId",
             "AttributeType": "S"
           }
         ],
         "KeySchema": [
           {
-            "AttributeName": "id",
+            "AttributeName": "emailId",
             "KeyType": "HASH"
           }
         ],
