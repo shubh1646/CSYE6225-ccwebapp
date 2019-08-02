@@ -85,7 +85,6 @@ public class UserRestController {
         UserDetails u = userService.loadUserByUsername(user.getEmailId());
 
         if (u != null) {
-            LOGGER.warn("Reset request made");
             AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
 
             CreateTopicResult topicResult = snsClient.createTopic("email");
@@ -93,6 +92,7 @@ public class UserRestController {
 
             final PublishRequest publishRequest = new PublishRequest(topicArn, user.getEmailId());
             final PublishResult publishResponse = snsClient.publish(publishRequest);
+            LOGGER.warn("Reset request made"+publishResponse.toString());
             return ResponseEntity.status(HttpStatus.CREATED).body("");
         } else {
             LOGGER.warn("Reset request Failed");
