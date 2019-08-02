@@ -42,6 +42,58 @@
         } ]
       }
     },
+    "lambdaFunctionId": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "csye6225",
+        "Code": {
+          "S3Bucket": { "Fn::Sub": "code-deploy.${domainName}" },
+          "S3Key": "email-1.0-SNAPSHOT.jar"
+        },
+        "Handler": "EmailEvent::handleRequest",
+        "Environment": {
+          "Variables": {
+            "domain": {"Ref": "domainName"},
+            "table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
+          }
+        },      
+        "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
+        "Runtime": "java8",
+        "MemorySize" : 256,
+        "Timeout": 180,
+        "Tags" : [
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Sub": "${AWS::StackName}-Email" }
+          },
+          {
+            "Key" : "Application Role",
+            "Value" : "Email Lambda"
+          }
+        ]
+      }
+    },
+    "topicId": {
+      "Type" : "AWS::SNS::Topic",
+      "DependsOn": "lambdaFunctionId",
+      "Properties" : {
+          "Subscription" : [{
+              "Endpoint" : { "Fn::GetAtt": [ "lambdaFunctionId", "Arn" ] },
+              "Protocol" : "lambda"            
+          } ],
+          "TopicName" : "email"
+        }
+    },
+    "lambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "DependsOn": "lambdaFunctionId",
+      "Properties": {
+        "FunctionName": {"Ref": "lambdaFunctionId"},
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {"Ref": "topicId"}
+      }
+    },
     "lambdaPolicy" : {
       "Type" : "AWS::IAM::ManagedPolicy",
       "DependsOn": "topicId",
@@ -73,58 +125,23 @@
                 "Effect": "Allow",
                 "Action": [ "s3:GetObject"],
                 "Resource": { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" }
+              },
+              {
+                "Sid" : "LambdaSNSAccess",
+                "Effect": "Allow",
+                "Action": [ "sns:ConfirmSubscription"],
+                "Resource": {"Ref": "topicId"}
               }
             ]
           },
           "Roles": [{"Ref": "lambdaExecutionRoleId"}]
       }
     },
-    "lambdaFunctionId": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "FunctionName": "csye6225_summer2019",
-        "Code": {
-          "S3Bucket": { "Fn::Sub": "code-deploy.${domainName}" },
-          "S3Key": "email-1.0-SNAPSHOT.jar"
-        },
-        "Handler": "EmailEvent::handleRequest",
-        "Environment": {
-          "Variables": {
-            "domain": {"Ref": "domainName"},
-            "table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
-          }
-        },      
-        "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
-        "Runtime": "java8",
-        "MemorySize" : 128,
-        "Timeout": 180,
-        "Tags" : [
-          {
-            "Key" : "Name",
-            "Value" : { "Fn::Sub": "${AWS::StackName}-EmailLambda" }
-          },
-          {
-            "Key" : "Application Role",
-            "Value" : "Email Lambda"
-          }
-        ]
-      }
-    },
-    "topicId": {
-      "Type" : "AWS::SNS::Topic",
-      "Properties" : {
-          "Subscription" : [{
-              "Endpoint" : { "Fn::GetAtt": [ "lambdaFunctionId", "Arn" ] },
-              "Protocol" : "lambda"            
-          } ],
-          "TopicName" : "email"
-        }
-    },
     "topicPolicy" : {
       "Type" : "AWS::IAM::ManagedPolicy",
       "DependsOn": "topicId",
       "Properties" : {
-          "ManagedPolicyName" : "TopicPolicy",
+          "ManagedPolicyName" : "EC2TopicAccessPolicy",
           "PolicyDocument" :  {
             "Version" : "2012-10-17",
             "Statement" : [
@@ -137,17 +154,6 @@
             ]
           },
           "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
-      }
-    },
-    "lambdaPermission": {
-      "Type": "AWS::Lambda::Permission",
-      "DependsOn": "lambdaFunctionId",
-      "Properties": {
-        "FunctionName": "csye6225_summer2019",
-        "Action": "lambda:InvokeFunction",
-        "Principal": "sns.amazonaws.com",
-        "SourceAccount": {"Ref": "AWS::AccountId"},
-        "SourceArn": {"Ref": "topicId"}
       }
     }
   },

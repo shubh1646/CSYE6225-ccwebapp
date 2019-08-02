@@ -91,8 +91,8 @@ public class UserRestController {
             String topicArn = topicResult.getTopicArn();
 
             final PublishRequest publishRequest = new PublishRequest(topicArn, user.getEmailId());
+            LOGGER.warn("Reset request made"+publishRequest.getMessage());
             final PublishResult publishResponse = snsClient.publish(publishRequest);
-            LOGGER.warn("Reset request made"+publishResponse.toString());
             return ResponseEntity.status(HttpStatus.CREATED).body("");
         } else {
             LOGGER.warn("Reset request Failed");
