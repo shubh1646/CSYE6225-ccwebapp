@@ -87,6 +87,21 @@
         }
       }
     },
+    "codeDeployLambdaUpdateFunctionCodePolicyId": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "Properties" : {
+        "ManagedPolicyName" : "CodeDeploy-Lambda-UpdateFunctionCode",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [ {
+              "Action": [ "lambda:UpdateFunctionCode" ],
+              "Effect": "Allow",
+              "Resource": {"Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*" }
+          } ]
+        },
+        "Users": ["circleci"]
+      }
+    },
     "circleciS3UploadPolicyId": {
       "Type" : "AWS::IAM::ManagedPolicy",
       "Properties" : {
@@ -130,7 +145,7 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [ {
-            "Sid": "",
+            "Sid": "codeDeployEC2ServiceRole",
             "Effect": "Allow",
             "Principal": { "Service": "codedeploy.amazonaws.com" },
             "Action": ["sts:AssumeRole"]

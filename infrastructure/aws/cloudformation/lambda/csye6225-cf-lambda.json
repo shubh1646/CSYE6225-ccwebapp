@@ -51,7 +51,7 @@
             "Version" : "2012-10-17",
             "Statement" : [
               {
-                "Sid" : "Lambda-DynamoDB-Access",
+                "Sid" : "LambdaDynamoDBAccess",
                 "Effect" : "Allow",
                 "Action" : ["dynamodb:GetItem", "dynamodb:PutItem"],
                 "Resource" : {
@@ -59,7 +59,7 @@
                 }
               },
               {
-                "Sid" : "Lambda-SES-Access",
+                "Sid" : "LambdaSESAccess",
                 "Effect": "Allow",
                 "Action": [
                   "ses:VerifyEmailAddress",
@@ -69,7 +69,7 @@
                 "Resource": {"Fn::Sub": "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"}
               },
               {
-                "Sid" : "Lambda-DynamoDB-Access",
+                "Sid" : "LambdaS3Access",
                 "Effect": "Allow",
                 "Action": [ "s3:GetObject"],
                 "Resource": { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" }
@@ -87,11 +87,11 @@
           "S3Bucket": { "Fn::Sub": "code-deploy.${domainName}" },
           "S3Key": "email-1.0-SNAPSHOT.jar"
         },
-        "Handler": "EmailEvent",
+        "Handler": "EmailEvent::handleRequest",
         "Environment": {
           "Variables": {
             "domain": {"Ref": "domainName"},
-            "Table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
+            "table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
           }
         },      
         "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
@@ -131,7 +131,7 @@
               {
                 "Sid" : "AllowEC2ToPublishToSNSTopic",
                 "Effect" : "Allow",
-                "Action" : "sns:Publish",
+                "Action" : [ "sns:Publish", "sns:CreateTopic"],
                 "Resource" : {"Ref": "topicId"}
               } 
             ]
@@ -143,7 +143,7 @@
       "Type": "AWS::Lambda::Permission",
       "DependsOn": "lambdaFunctionId",
       "Properties": {
-        "FunctionName": "csye6225",
+        "FunctionName": "csye6225_summer2019",
         "Action": "lambda:InvokeFunction",
         "Principal": "sns.amazonaws.com",
         "SourceAccount": {"Ref": "AWS::AccountId"},

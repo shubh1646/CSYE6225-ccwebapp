@@ -5,8 +5,8 @@ read lambdaStackName
 echo "enter the name for your Application Stack(alphanumeric)"
 read applicationStackName
 echo "enter the name of your CircleCI Roles and Policies stack(alphanumeric)"
-read CircleCIStackName
-if [ -z "$lambdaStackName" ] || [ -z "$applicationStackName" ] || [ -z "$CircleCIStackName" ]
+read circleCIStackName
+if [ -z "$lambdaStackName" ] || [ -z "$applicationStackName" ] || [ -z "$circleCIStackName" ]
 then
     echo "Failed: either Lambda Stack Name or Application Stack Name or CircleCI Stack Name Null"
     exit
@@ -32,7 +32,7 @@ then
    echo "Failed: Your Application Stack not setup"
    exit
 fi
-aws cloudformation describe-stacks --stack-name $CircleCIStackName &> /dev/null
+aws cloudformation describe-stacks --stack-name $circleCIStackName &> /dev/null
 if [ $? -ne 0 ]
 then
    echo "Failed: Your CircleCI Stack not setup"
@@ -42,7 +42,7 @@ fi
 status=$(aws cloudformation create-stack --stack-name $lambdaStackName \
 --template-body file://csye6225-cf-lambda.json \
 --parameters \
-ParameterKey=CircleCIStackName,ParameterValue=$CircleCIStackName \
+ParameterKey=CircleCIStackName,ParameterValue=$circleCIStackName \
 ParameterKey=ApplicationStackName,ParameterValue=$applicationStackName \
 ParameterKey=domainName,ParameterValue=$domainName \
 --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
@@ -50,7 +50,7 @@ ParameterKey=domainName,ParameterValue=$domainName \
 if [ $? -eq 0 ]
 then
     echo "please wait....."
-    aws cloudformation wait stack-create-complete --stack-name $applicationStackName
+    aws cloudformation wait stack-create-complete --stack-name $lambdaStackName
     if [ $? -eq 0 ]
     then
         echo "Successfully setup the stack"
