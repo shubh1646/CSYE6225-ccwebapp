@@ -15,13 +15,10 @@
       "Description": "CloudWatchAgentServerPolicy ARN",
       "Type": "String",
       "Default": "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-    },
-    "SNSFullAcessPolicyArn": {
-      "Description": "SNSFullAcessPolicyPolicy ARN",
-      "Type": "String",
-      "Default": "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
     }
   },
+
+
   "Resources": {
     "circleciEc2AmiPolicyId": {
       "Type": "AWS::IAM::ManagedPolicy",
@@ -101,6 +98,21 @@
         }
       }
     },
+    "codeDeployLambdaUpdateFunctionCodePolicyId": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "Properties" : {
+        "ManagedPolicyName" : "CodeDeploy-Lambda-UpdateFunctionCode",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [ {
+              "Action": [ "lambda:UpdateFunctionCode" ],
+              "Effect": "Allow",
+              "Resource": {"Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*" }
+          } ]
+        },
+        "Users": ["circleci"]
+      }
+    },
     "circleciS3UploadPolicyId": {
       "Type": "AWS::IAM::ManagedPolicy",
       "Properties": {
@@ -124,7 +136,7 @@
         ]
       }
     },
-    "codeDeployEC2ServiceRoleId": {
+    "ec2ExecutionRoleId": {
       "Type": "AWS::IAM::Role",
       "DependsOn": "codeDeployEc2S3PolicyId",
       "Properties": {
@@ -144,108 +156,50 @@
           ]
         },
         "Path": "/",
+        "RoleName": "EC2ExecutionRole",
+        "ManagedPolicyArns": [ 
+          {"Ref": "codeDeployEc2S3PolicyId"}, 
+          {"Ref": "cloudWatchAgentPolicyArn"}
+        ],
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-EC2ExecutionRoleId" }
+        } ]
+      }
+    },
+    "codeDeployEC2ServiceRoleId": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [ {
+            "Sid": "codeDeployEC2ServiceRole",
+            "Effect": "Allow",
+            "Principal": { "Service": "codedeploy.amazonaws.com" },
+            "Action": ["sts:AssumeRole"]
+          } ]
+        },
+        "Path": "/",
         "RoleName": "CodeDeployEC2ServiceRole",
-        "ManagedPolicyArns": [
-          {
-            "Ref": "codeDeployEc2S3PolicyId"
-          },
-          {
-            "Ref": "cloudWatchAgentPolicyArn"
-          },
-          {
-            "Ref": "SNSFullAcessPolicyArn"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole"
-            }
-          }
-        ]
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole" ],
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }
+        } ]
       }
     },
-    "CodeDeployServiceRoleId": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "codedeploy.amazonaws.com"
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
-        },
-        "Path": "/",
-        "RoleName": "CodeDeployServiceRole",
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Sub": "${AWS::StackName}-CodeDeployServiceRole"
-            }
-          }
-        ]
+    "ec2ApplicationId": {
+      "Type" : "AWS::CodeDeploy::Application",
+      "Properties" : {
+        "ApplicationName" : "csye6225-webapp",
+        "ComputePlatform" : "Server"
       }
     },
-    "LambdaExecutionRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "RoleName": "LambdaExecutionRole",
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com"
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
-        },
-        "Path": "/",
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-          "arn:aws:iam::aws:policy/AmazonSESFullAccess",
-          "arn:aws:iam::aws:policy/AmazonSNSFullAccess",
-          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-          "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
-        ]
-      }
-    },
-    "applicationId": {
-      "Type": "AWS::CodeDeploy::Application",
-      "Properties": {
-        "ApplicationName": "csye6225-webapp",
-        "ComputePlatform": "Server"
-      }
-    },
-    "deploymentGroupId": {
-      "Type": "AWS::CodeDeploy::DeploymentGroup",
-      "Properties": {
-        "ApplicationName": {
-          "Ref": "applicationId"
-        },
+    "ec2DeploymentGroupId" : {
+      "Type" : "AWS::CodeDeploy::DeploymentGroup",
+      "Properties" : {
+        "ApplicationName" : {"Ref" : "ec2ApplicationId"},
         "DeploymentGroupName": "csye6225-webapp-deployment",
-        "ServiceRoleArn": {
-          "Fn::GetAtt": [
-            "CodeDeployServiceRoleId",
-            "Arn"
-          ]
-        },
+        "ServiceRoleArn" : { "Fn::GetAtt" : [ "codeDeployEC2ServiceRoleId", "Arn" ] },
         "DeploymentStyle": {
           "DeploymentType": "IN_PLACE",
           "DeploymentOption": "WITHOUT_TRAFFIC_CONTROL"
@@ -269,10 +223,10 @@
       }
     },
     "cirlceciCodeDeployPolicyId": {
-      "Type": "AWS::IAM::ManagedPolicy",
-      "DependsOn": "applicationId",
-      "Properties": {
-        "ManagedPolicyName": "CirlceCI-Code-Deploy",
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "DependsOn": "ec2ApplicationId",
+      "Properties" : {
+        "ManagedPolicyName" : "CirlceCI-Code-Deploy",
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -284,9 +238,7 @@
                 "codedeploy:ListApplicationRevisions"
               ],
               "Resource": [
-                {
-                  "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${applicationId}"
-                }
+                {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${ec2ApplicationId}"}
               ]
             },
             {
@@ -296,9 +248,7 @@
                 "codedeploy:GetDeployment"
               ],
               "Resource": [
-                {
-                  "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${applicationId}/${deploymentGroupId}"
-                }
+                {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ec2ApplicationId}/${ec2DeploymentGroupId}"}
               ]
             },
             {
@@ -307,15 +257,10 @@
                 "codedeploy:GetDeploymentConfig"
               ],
               "Resource": [
-                {
-                  "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.OneAtATime"
-                },
-                {
-                  "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.HalfAtATime"
-                },
-                {
-                  "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.AllAtOnce"
-                }
+                {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.OneAtATime"},
+                {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.HalfAtATime"},
+                {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.AllAtOnce"},
+                {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.LambdaAllAtOnce"}
               ]
             }
           ]
@@ -327,26 +272,18 @@
     }
   },
   "Outputs": {
-    "codeDeployEC2ServiceRoleId": {
-      "Description": "Application S3 Bucket",
-      "Value": {
-        "Ref": "codeDeployEC2ServiceRoleId"
-      },
+    "ec2ExecutionRoleId": {
+      "Description": "EC2 Execution Role logical Id",
+      "Value": { "Ref": "ec2ExecutionRoleId" },
       "Export": {
-        "Name": {
-          "Fn::Sub": "${AWS::StackName}-codeDeployEC2ServiceRoleId"
-        }
+        "Name": { "Fn::Sub": "${AWS::StackName}-ec2ExecutionRoleId" }
       }
     },
-      "LambdaExecutionRole": {
-        "Description": "Lambda execution policy",
-        "Value": {
-          "Ref": "LambdaExecutionRole"
-        },
-        "Export": {
-          "Name": {
-            "Fn::Sub": "${AWS::StackName}-LambdaExecutionRole"
-          }
+    "ec2ExecutionRoleArn": {
+      "Description": "EC2 Execution Role Arn",
+      "Value": {"Fn::GetAtt" : ["ec2ExecutionRoleId", "Arn"] },
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-ec2ExecutionRoleArn" }
       }
     }
   }

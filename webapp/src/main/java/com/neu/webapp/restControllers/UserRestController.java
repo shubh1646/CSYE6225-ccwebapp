@@ -1,6 +1,7 @@
 package com.neu.webapp.restControllers;
 
 import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.model.*;
 import com.neu.webapp.errors.RegistrationStatus;
 import com.neu.webapp.models.User;
 import com.neu.webapp.services.UserService;
@@ -19,11 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.PublishResult;
 import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.model.CreateTopicRequest;
-import com.amazonaws.services.sns.model.CreateTopicResult;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -80,24 +78,24 @@ public class UserRestController {
 
     }
     @PostMapping("/reset")
-    public ResponseEntity<String> PasswordReset(@RequestBody String email) {
+    public ResponseEntity<String> PasswordReset(@RequestBody User user) throws Exception{
         metricsClient.incrementCounter("endpoint./.http.reset");
 
 
-        UserDetails u = userService.loadUserByUsername(email);
+        UserDetails u = userService.loadUserByUsername(user.getEmailId());
 
         if (u != null) {
-
             AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
 
-            CreateTopicResult topicResult = snsClient.createTopic("SESTopic");
+            CreateTopicResult topicResult = snsClient.createTopic("email");
             String topicArn = topicResult.getTopicArn();
 
-            final PublishRequest publishRequest = new PublishRequest(topicArn, email);
+            final PublishRequest publishRequest = new PublishRequest(topicArn, user.getEmailId());
+            LOGGER.warn("Reset request made"+publishRequest.getMessage());
             final PublishResult publishResponse = snsClient.publish(publishRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body("");
         } else {
-
+            LOGGER.warn("Reset request Failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("");
         }
 
