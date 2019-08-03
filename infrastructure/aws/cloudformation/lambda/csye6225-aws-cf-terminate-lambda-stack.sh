@@ -17,7 +17,7 @@ then
 	if [ $? -eq 0 ]
 	then 
 	
-    echo "YAYYY !!! Stack is deleted !"
+    echo "Yess !!! Stack is deleted !"
 	else
 		echo "delete command failure"
 	fi
