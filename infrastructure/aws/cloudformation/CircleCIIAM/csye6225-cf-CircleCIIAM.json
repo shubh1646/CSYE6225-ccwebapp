@@ -1,6 +1,6 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "AWS CloudFormation Template for CircleCI Roles and Policies",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for CircleCI Roles and Policies",
   "Parameters": {
     "domainName": {
       "Description": "domain Name for S3 Bucket Naming",
@@ -21,69 +21,80 @@
 
   "Resources": {
     "circleciEc2AmiPolicyId": {
-      "Type" : "AWS::IAM::ManagedPolicy",
-      "Properties" : {
-        "ManagedPolicyName" : "CircleCI-EC2-AMI",
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": "CircleCI-EC2-AMI",
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Action" : [
-              "ec2:AttachVolume",
-              "ec2:AuthorizeSecurityGroupIngress",
-              "ec2:CopyImage",
-              "ec2:CreateImage",
-              "ec2:CreateKeypair",
-              "ec2:CreateSecurityGroup",
-              "ec2:CreateSnapshot",
-              "ec2:CreateTags",
-              "ec2:CreateVolume",
-              "ec2:DeleteKeyPair",
-              "ec2:DeleteSecurityGroup",
-              "ec2:DeleteSnapshot",
-              "ec2:DeleteVolume",
-              "ec2:DeregisterImage",
-              "ec2:DescribeImageAttribute",
-              "ec2:DescribeImages",
-              "ec2:DescribeInstances",
-              "ec2:DescribeInstanceStatus",
-              "ec2:DescribeRegions",
-              "ec2:DescribeSecurityGroups",
-              "ec2:DescribeSnapshots",
-              "ec2:DescribeSubnets",
-              "ec2:DescribeTags",
-              "ec2:DescribeVolumes",
-              "ec2:DetachVolume",
-              "ec2:GetPasswordData",
-              "ec2:ModifyImageAttribute",
-              "ec2:ModifyInstanceAttribute",
-              "ec2:ModifySnapshotAttribute",
-              "ec2:RegisterImage",
-              "ec2:RunInstances",
-              "ec2:StopInstances",
-              "ec2:TerminateInstances"
-            ],
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CopyImage",
+                "ec2:CreateImage",
+                "ec2:CreateKeypair",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateSnapshot",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:DeleteKeyPair",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteSnapshot",
+                "ec2:DeleteVolume",
+                "ec2:DeregisterImage",
+                "ec2:DescribeImageAttribute",
+                "ec2:DescribeImages",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DescribeRegions",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSnapshots",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumes",
+                "ec2:DetachVolume",
+                "ec2:GetPasswordData",
+                "ec2:ModifyImageAttribute",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifySnapshotAttribute",
+                "ec2:RegisterImage",
+                "ec2:RunInstances",
+                "ec2:StopInstances",
+                "ec2:TerminateInstances"
+              ],
+              "Resource": "*"
+            }
+          ]
         },
-        "Users": ["circleci"]
+        "Users": [
+          "circleci"
+        ]
       }
     },
     "codeDeployEc2S3PolicyId": {
-      "Type" : "AWS::IAM::ManagedPolicy",
-      "Properties" : {
-        "ManagedPolicyName" : "CodeDeploy-EC2-S3",
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": "CodeDeploy-EC2-S3",
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [ {
-            "Action": [ "s3:Get*", "s3:List*" ],
-            "Effect": "Allow",
-            "Resource": [
-              { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" },
-              "arn:aws:s3:::aws-codedeploy-us-east-2/*",
-              "arn:aws:s3:::aws-codedeploy-us-east-1/*"
-            ]
-          } ]
+          "Statement": [
+            {
+              "Action": [
+                "s3:Get*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*"
+                },
+                "arn:aws:s3:::aws-codedeploy-us-east-2/*",
+                "arn:aws:s3:::aws-codedeploy-us-east-1/*"
+              ]
+            }
+          ]
         }
       }
     },
@@ -103,18 +114,26 @@
       }
     },
     "circleciS3UploadPolicyId": {
-      "Type" : "AWS::IAM::ManagedPolicy",
-      "Properties" : {
-        "ManagedPolicyName" : "CircleCI-Upload-To-S3",
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": "CircleCI-Upload-To-S3",
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [ {
-            "Action": [ "s3:PutObject" ],
-            "Effect": "Allow",
-            "Resource": { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" }
-          } ]
+          "Statement": [
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*"
+              }
+            }
+          ]
         },
-        "Users": ["circleci"]
+        "Users": [
+          "circleci"
+        ]
       }
     },
     "ec2ExecutionRoleId": {
@@ -122,11 +141,19 @@
       "DependsOn": "codeDeployEc2S3PolicyId",
       "Properties": {
         "AssumeRolePolicyDocument": {
-          "Statement": [ {
-            "Effect": "Allow",
-            "Principal": { "Service": ["ec2.amazonaws.com"] },
-            "Action": ["sts:AssumeRole"]
-          } ]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
         },
         "Path": "/",
         "RoleName": "EC2ExecutionRole",
@@ -177,15 +204,17 @@
           "DeploymentType": "IN_PLACE",
           "DeploymentOption": "WITHOUT_TRAFFIC_CONTROL"
         },
-        "Ec2TagFilters" : [{
-          "Key" : "Application Role",
-          "Value" : "Web Server",
-          "Type" : "KEY_AND_VALUE"
-        }],
+        "Ec2TagFilters": [
+          {
+            "Key": "Application Role",
+            "Value": "Web Server",
+            "Type": "KEY_AND_VALUE"
+          }
+        ],
         "DeploymentConfigName": "CodeDeployDefault.AllAtOnce",
         "AutoRollbackConfiguration": {
-          "Enabled" : "True",
-          "Events" : [
+          "Enabled": "True",
+          "Events": [
             "DEPLOYMENT_FAILURE",
             "DEPLOYMENT_STOP_ON_ALARM",
             "DEPLOYMENT_STOP_ON_REQUEST"
@@ -224,7 +253,9 @@
             },
             {
               "Effect": "Allow",
-              "Action": [ "codedeploy:GetDeploymentConfig" ],
+              "Action": [
+                "codedeploy:GetDeploymentConfig"
+              ],
               "Resource": [
                 {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.OneAtATime"},
                 {"Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:CodeDeployDefault.HalfAtATime"},
@@ -234,7 +265,9 @@
             }
           ]
         },
-        "Users": ["circleci"]
+        "Users": [
+          "circleci"
+        ]
       }
     }
   },

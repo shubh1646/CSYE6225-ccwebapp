@@ -16,7 +16,7 @@ echo "enter your domain name"
 read domainName
 if [ -z "$domainName" ]
 then
-    echo "Failed: entered domainName is Null"
+    echo "Failed: Entered domainName is Null"
     exit
 fi
 
