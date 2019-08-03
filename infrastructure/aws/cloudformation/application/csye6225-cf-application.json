@@ -63,7 +63,7 @@
             }
           ]
         },
-        "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }]
+        "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
       }
     },
     "WebappSecurityGroup": {
@@ -71,11 +71,7 @@
       "Properties": {
         "GroupName": "csye6225-WebappSecuritygroup",
         "GroupDescription": "Security Group for web server",
-        "VpcId": {
-          "Fn::ImportValue": {
-            "Fn::Sub": "${NetworkStackName}-vpcId"
-          }
-        },
+        "VpcId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}},
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
@@ -174,7 +170,7 @@
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Roles": [
-          { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-codeDeployEC2ServiceRoleId"} }
+          { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }
         ],
         "InstanceProfileName": "ec2InstanceProfile"
       }
@@ -244,47 +240,6 @@
         ]
       }
     },
-
-
-    "SNSTopic": {
-      "Type" : "AWS::SNS::Topic",
-      "Properties" : {
-         "DisplayName" : "MySNSTopic",
-         "TopicName" : "password_reset",
-         "Subscription": [
-	         {
-				  "Endpoint": {
-				    "Fn::GetAtt": [ "LambdaFunction", "Arn" ]
-				  },
-				  "Protocol": "lambda"
-				}
-			      ]
-		}
-      },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
@@ -304,11 +259,28 @@
         "ProvisionedThroughput": {
           "ReadCapacityUnits": "5",
           "WriteCapacityUnits": "5"
-        }
+        },
+        "TimeToLiveSpecification": {
+          "AttributeName" : "timeStamp",
+          "Enabled" : true
+        }        
       }
     }
   },
   "Outputs": {
-
+    "dynamoDBArn": {
+      "Description": "DynamoDB Table Arn",
+      "Value": {"Fn::GetAtt": ["dynamoDBId", "Arn"]},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBArn" }
+      }
+    },
+    "dynamoDBTable": {
+      "Description": "DynamoDB Table Name",
+      "Value": {"Ref": "dynamoDBId"},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBTable" }
+      }
+    }
   }
 }
