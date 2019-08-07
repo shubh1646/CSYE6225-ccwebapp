@@ -1,0 +1,470 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for a Application stack ec2 instance ",
+  "Parameters": {
+    "NetworkStackName": {
+      "Description": "Web-Application Network Stack Name",
+      "Type": "String"
+    },
+    "amiId": {
+      "Description": "Image-ID of created Centos",
+      "Type": "String"
+    },
+    "CircleCIStackName": {
+      "Description": "CircleCI Roles and Policies Stack Name",
+      "Type": "String"
+    },
+    "domainName": {
+      "Description": "domain Name for S3 Bucket Naming",
+      "Type": "String",
+      "AllowedValues": [
+        "csye6225-su19-sebastianc.me",
+        "csye6225-su19-gandhiman.me",
+        "csye6225-su19-sharmashubh.me"
+      ]
+    },
+    "certificateArn": {
+      "Description": "SSL Certificate Arn",
+      "Type": "String"
+    },
+    "hostedZoneID": {
+      "Description": "Hosted Zone Id corresponding to you domain",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "s3BucketId": {
+      "Type" : "AWS::S3::Bucket",
+      "DeletionPolicy" : "Delete",
+      "Properties" : {
+        "BucketName" : {"Fn::Sub" : "${domainName}.csye6225.com"},
+        "PublicAccessBlockConfiguration" : {
+          "BlockPublicAcls" : true,
+          "BlockPublicPolicy" : true,
+          "IgnorePublicAcls" : true,
+          "RestrictPublicBuckets" : true
+        },
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-S3-Bucket" }
+        } ]
+      }
+    },
+    "s3BucketCrudPolicyId": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "DependsOn": "s3BucketId",
+      "Properties" : {
+        "ManagedPolicyName" : "EC2-S3-Access",
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
+              "Effect": "Allow",
+              "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+              "Resource": {
+                "Fn::Sub": [
+                  "${bucketArn}/*",
+                  { "bucketArn": {"Fn::GetAtt" : [ "s3BucketId", "Arn" ]} }
+                ]
+              }
+            }
+          ]
+        },
+        "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
+      }
+    },
+    "LoadBalancerSecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupName" : "csye6225-LoadBalancerSecuritygroup",
+        "GroupDescription": "Security Group for web server load balancer",
+        "SecurityGroupIngress" : [ 
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          } 
+        ],
+        "VpcId": {
+          "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}
+        }
+      }
+    },
+    "WebappSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "csye6225-WebappSecuritygroup",
+        "GroupDescription": "Security Group for web server",
+        "VpcId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}},
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "ToPort": "8080",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "ToPort": "8080",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [ "LoadBalancerSecurityGroup", "GroupId" ]
+            }
+          }
+        ]
+      }
+    },
+    "DBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "csye6225-DBSecurityGroup",
+        "GroupDescription": "Enable TCP access via port 3306",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-vpcId"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "3306",
+            "ToPort": "3306",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [ "WebappSecurityGroup", "GroupId" ]
+            }
+          }
+        ]
+      }
+    },
+    "dbSubnetGroupId": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Data Base Group Name to be assigned to ",
+        "DBSubnetGroupName": "DBsubnetGroup",
+        "SubnetIds": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${NetworkStackName}-subnet2Id"
+            }
+          },
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${NetworkStackName}-subnet3Id"
+            }
+          }
+        ]
+      }
+    },
+    "rdsInstanceId": {
+      "Type": "AWS::RDS::DBInstance",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "AllocatedStorage": "20",
+        "Engine": "mysql",
+        "EngineVersion": "5.6.35",
+        "DBInstanceClass": "db.t2.micro",
+        "MultiAZ": false,
+        "DBInstanceIdentifier": "csye6225-su19",
+        "MasterUsername": "csye6225master",
+        "MasterUserPassword": "csye6225password",
+        "DBSubnetGroupName": {
+          "Ref": "dbSubnetGroupId"
+        },
+        "VPCSecurityGroups": [
+          {
+            "Ref": "DBSecurityGroup"
+          }
+        ],
+        "PubliclyAccessible": true,
+        "DBName": "csye6225",
+        "Port": "3306"
+      }
+    },
+    "ec2InstanceProfileId": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }
+        ],
+        "InstanceProfileName": "ec2InstanceProfile"
+      }
+    },
+    "loadBalancerId": {
+      "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties" : {
+        "Name" : "EC2LoadBalancer",
+        "Type" : "application",
+        "IpAddressType" : "ipv4",
+        "Scheme" : "internet-facing",
+        "SecurityGroups" : [ {"Ref": "LoadBalancerSecurityGroup"} ],
+        "Subnets" : [
+          {
+            "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"}
+          },
+          {
+            "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet2Id"}
+          }
+        ],
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-EC2LoadBalancer" }
+        } ]
+      }
+    },
+    "loadBalancerTargetGroupId": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+          "Name" : "EC2TargetGroup",
+          "TargetType" : "instance",
+          "Port" : 8080,
+          "Protocol" : "HTTP",
+          "Tags" : [ 
+            {
+              "Key" : "Name",
+              "Value" : { "Fn::Sub": "${AWS::StackName}-LoadBalancerTargetGroup" }
+            }
+          ],
+          "VpcId" : { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"} }
+        }
+    },
+    "loadBalancerListenerId": {
+      "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties" : {
+          "Certificates" : [
+            {
+              "CertificateArn" : {"Ref": "certificateArn"}
+            }            
+          ],
+          "DefaultActions" : [ 
+            {
+              "Type" : "forward",
+              "TargetGroupArn" : {"Ref": "loadBalancerTargetGroupId"}    
+            }
+          ],
+          "LoadBalancerArn" : {"Ref": "loadBalancerId"},
+          "Port" : 443,
+          "Protocol" : "HTTPS"
+      }
+    },
+    "launchConfigurationId": {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "LaunchConfigurationName" : "asg_ec2_launch_config",
+        "InstanceType" : "2.micro",
+        "PlacementTenancy" : "default",
+        "AssociatePublicIpAddress" : true,
+        "IamInstanceProfile" : {"Ref": "ec2InstanceProfileId"},
+        "ImageId" : {"Ref": "amiId"},
+        "SecurityGroups" : [ {"Ref": "WebappSecurityGroup"} ],
+        "KeyName" : "csye6225",
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": true,
+              "VolumeSize": "20"
+            }
+          }
+        ],
+        "EbsOptimized" : false,
+        "UserData" : {
+          "Fn::Base64" : {
+            "Fn::Join" : [ "", [
+              "#!/bin/bash\n",
+              "sudo systemctl stop tomcat\n",
+              "echo \"#!/bin/sh\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"\nJAVA_OPTS=\\$JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"if [ -z \\\"\\$JAVA_OPTS\\\" ]\nthen\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"\tJAVA_OPTS=\\\"-DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"else\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"\tJAVA_OPTS=\\\"\\${JAVA_OPTS} -DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"fi\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"JAVA_OPTS=\\\"\\${JAVA_OPTS} -Ddomain=",{"Fn::GetAtt": ["rdsInstanceId", "Endpoint.Address"]},
+              " -Ddatabase=csye6225 -DsqlUsername=csye6225master -DsqlPassword=csye6225password",
+              " -Dbucket=", { "Ref" : "s3BucketId" },
+              "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
+              "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s",
+              "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/amazon-cloudwatch-agent.json\n",
+              "sudo systemctl start tomcat"
+            ] ]
+          }
+        }
+      }
+    },
+    "autoScalingGroupId": {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+          "AutoScalingGroupName" : "WebServerGroup",
+          "Cooldown" : "60",
+          "DesiredCapacity" : "3",
+          "HealthCheckType" : "EC2",
+          "LaunchConfigurationName" : {"Ref": "launchConfigurationId"},
+          "MaxSize" : "7",
+          "MetricsCollection" : [ {
+            "Granularity" : "1Minute",
+            "Metrics" : [ 
+              "GroupInServiceInstances",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances" 
+            ]
+          } ],
+          "MinSize" : "3",
+          "Tags" : [
+            {
+              "Key" : "Name",
+              "Value" : { "Fn::Sub": "${AWS::StackName}-AutoScalingGroup" },
+              "PropagateAtLaunch" : false
+            },
+            {
+              "Key" : "Application Role",
+              "Value" : "Web Server",
+              "PropagateAtLaunch" : true
+            }                        
+          ],
+          "TargetGroupARNs" : [ {"Ref": "loadBalancerTargetGroupId"} ],
+          "TerminationPolicies" : [ "OldestInstance","Default" ],
+          "VPCZoneIdentifier" : [ { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"} } ]
+        }
+    },
+    "WebServerScaleUpPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": {"Ref": "autoScalingGroupId"},
+        "Cooldown": "60",
+        "ScalingAdjustment": "1"
+      }
+    },
+    "WebServerScaleDownPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": {"Ref": "autoScalingGroupId"},
+        "Cooldown": "60",
+        "ScalingAdjustment": "-1"
+      }
+    },
+    "CPUAlarmHigh": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-up if CPU > 5% for 10 minutes",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "300",
+        "EvaluationPeriods": "2",
+        "Threshold": "5",
+        "AlarmActions": [ {"Ref": "WebServerScaleUpPolicy"} ],
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {"Ref": "autoScalingGroupId"}
+          }
+        ],
+        "ComparisonOperator": "GreaterThanThreshold"
+      }
+    },
+    "CPUAlarmLow": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-down if CPU < 1% for 10 minutes",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "300",
+        "EvaluationPeriods": "2",
+        "Threshold": "1",
+        "AlarmActions": [ {"Ref": "WebServerScaleDownPolicy"} ],
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {"Ref": "autoScalingGroupId"}
+          }
+        ],
+        "ComparisonOperator": "LessThanThreshold"
+      }
+    },
+    "dnsARecordSet": {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "AliasTarget" : {
+          "DNSName" : {"Fn::GetAtt": ["loadBalancerId", "DNSName"]},
+          "EvaluateTargetHealth" : true,
+          "HostedZoneId" : {"Fn::GetAtt": ["loadBalancerId", "CanonicalHostedZoneID"]}
+        },
+        "HostedZoneId" : {"Ref": "hostedZoneId"},
+        "Name" : "String",
+        "TTL" : "1800",
+        "Type" : "A"
+      }
+    },    
+    "dynamoDBId": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "csye6225",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "emailId",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "emailId",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": "5",
+          "WriteCapacityUnits": "5"
+        },
+        "TimeToLiveSpecification": {
+          "AttributeName" : "timeStamp",
+          "Enabled" : true
+        }        
+      }
+    }
+  },
+  "Outputs": {
+    "dynamoDBTable": {
+      "Description": "DynamoDB Table Name",
+      "Value": {"Ref": "dynamoDBId"},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBTable" }
+      }
+    },
+    
+    "dynamoDBArn": {
+      "Description": "DynamoDB Table Arn",
+      "Value": {"Fn::GetAtt": ["dynamoDBId", "Arn"]},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBArn" }
+      }
+    }
+  }
+}
