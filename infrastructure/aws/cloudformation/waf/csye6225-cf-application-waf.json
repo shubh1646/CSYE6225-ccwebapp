@@ -1,72 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS CloudFormation Template for a Application stack ec2 instance ",
-  "Parameters": {
-    "NetworkStackName": {
-      "Description": "Web-Application Network Stack Name",
-      "Type": "String"
-    },
-    "certificateArn": {
-      "Description": "SSL Certificate Arn",
-      "Type": "String"
-    },
-    "hostedZoneID": {
-      "Description": "Hosted Zone Id corresponding to you domain",
-      "Type": "String"
-    }
-  },
   "Resources": {
-    "LoadBalancerSecurityGroup": {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "GroupName" : "csye6225-LoadBalancerSecuritygroup",
-        "GroupDescription": "Security Group for web server load balancer",
-        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"} },
-        "SecurityGroupIngress" : [ 
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "443",
-            "ToPort": "443",
-            "CidrIp": "0.0.0.0/0"
-          } 
-        ]
-      }
-    },
-    "loadBalancerId": {
-      "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
-      "Properties" : {
-        "Name" : "EC2LoadBalancer",
-        "Type" : "application",
-        "IpAddressType" : "ipv4",
-        "Scheme" : "internet-facing",
-        "SecurityGroups" : [ {"Ref": "LoadBalancerSecurityGroup"} ],
-        "Subnets" : [
-          {
-            "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"}
-          },
-          {
-            "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet2Id"}
-          }
-        ],
-        "Tags" : [ {
-          "Key" : "Name",
-          "Value" : { "Fn::Sub": "${AWS::StackName}-EC2LoadBalancer" }
-        } ]
-      }
-    },
-    "dnsARecordSet" : {
-      "Type" : "AWS::Route53::RecordSet",
-      "Properties" : {
-        "Name" : "csye6225-su19-sebastianc.me.",
-        "Type" : "A",
-        "HostedZoneId" : {"Ref": "hostedZoneID"},
-        "AliasTarget" : {
-          "DNSName" : {"Fn::GetAtt": ["loadBalancerId", "DNSName"]},
-          "EvaluateTargetHealth" : false,
-          "HostedZoneId" : {"Fn::GetAtt": ["loadBalancerId", "CanonicalHostedZoneID"]}
-        }
-      }
-    },
     "wafrSQLiSet": {
       "Type": "AWS::WAFRegional::SqlInjectionMatchSet",
       "Properties": {
@@ -716,7 +651,7 @@
       "DependsOn": "MyWebACL",
       "Properties": {
         "ResourceArn": {
-          "Ref": "loadBalancerId"
+          "Fn::ImportValue": "loadBalancerArn"
         },
         "WebACLId": {
           "Ref": "MyWebACL"
