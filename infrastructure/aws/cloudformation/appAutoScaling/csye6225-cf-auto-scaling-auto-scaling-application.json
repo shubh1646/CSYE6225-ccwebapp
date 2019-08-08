@@ -79,6 +79,7 @@
       "Properties" : {
         "GroupName" : "csye6225-LoadBalancerSecuritygroup",
         "GroupDescription": "Security Group for web server load balancer",
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"} },
         "SecurityGroupIngress" : [ 
           {
             "IpProtocol": "tcp",
@@ -86,10 +87,7 @@
             "ToPort": "443",
             "CidrIp": "0.0.0.0/0"
           } 
-        ],
-        "VpcId": {
-          "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}
-        }
+        ]
       }
     },
     "WebappSecurityGroup": {
@@ -99,30 +97,6 @@
         "GroupDescription": "Security Group for web server",
         "VpcId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}},
         "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "22",
-            "ToPort": "22",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "80",
-            "ToPort": "80",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "443",
-            "ToPort": "443",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8080",
-            "ToPort": "8080",
-            "CidrIp": "0.0.0.0/0"
-          },
           {
             "IpProtocol": "tcp",
             "FromPort": "8080",
@@ -139,11 +113,7 @@
       "Properties": {
         "GroupName": "csye6225-DBSecurityGroup",
         "GroupDescription": "Enable TCP access via port 3306",
-        "VpcId": {
-          "Fn::ImportValue": {
-            "Fn::Sub": "${NetworkStackName}-vpcId"
-          }
-        },
+        "VpcId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}},
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
@@ -269,8 +239,8 @@
     "launchConfigurationId": {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
-        "LaunchConfigurationName" : "asg_ec2_launch_config",
-        "InstanceType" : "2.micro",
+        "LaunchConfigurationName" : "asg_launch_config",
+        "InstanceType" : "t2.micro",
         "PlacementTenancy" : "default",
         "AssociatePublicIpAddress" : true,
         "IamInstanceProfile" : {"Ref": "ec2InstanceProfileId"},
@@ -322,6 +292,7 @@
           "DesiredCapacity" : "3",
           "HealthCheckType" : "EC2",
           "LaunchConfigurationName" : {"Ref": "launchConfigurationId"},
+          "MinSize" : "3",
           "MaxSize" : "7",
           "MetricsCollection" : [ {
             "Granularity" : "1Minute",
@@ -333,7 +304,9 @@
               "GroupTotalInstances" 
             ]
           } ],
-          "MinSize" : "3",
+          "TargetGroupARNs" : [ {"Ref": "loadBalancerTargetGroupId"} ],
+          "TerminationPolicies" : [ "OldestInstance","Default" ],
+          "VPCZoneIdentifier" : [ { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"} } ],
           "Tags" : [
             {
               "Key" : "Name",
@@ -345,10 +318,7 @@
               "Value" : "Web Server",
               "PropagateAtLaunch" : true
             }                        
-          ],
-          "TargetGroupARNs" : [ {"Ref": "loadBalancerTargetGroupId"} ],
-          "TerminationPolicies" : [ "OldestInstance","Default" ],
-          "VPCZoneIdentifier" : [ { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"} } ]
+          ]
         }
     },
     "WebServerScaleUpPolicy": {
@@ -398,7 +368,7 @@
         "Statistic": "Average",
         "Period": "300",
         "EvaluationPeriods": "2",
-        "Threshold": "1",
+        "Threshold": "3",
         "AlarmActions": [ {"Ref": "WebServerScaleDownPolicy"} ],
         "Dimensions": [
           {
@@ -409,20 +379,19 @@
         "ComparisonOperator": "LessThanThreshold"
       }
     },
-    "dnsARecordSet": {
+    "dnsARecordSet" : {
       "Type" : "AWS::Route53::RecordSet",
       "Properties" : {
+        "Name" : {"Ref": "domainName"},
+        "Type" : "A",
+        "HostedZoneId" : {"Ref": "hostedZoneID"},
         "AliasTarget" : {
           "DNSName" : {"Fn::GetAtt": ["loadBalancerId", "DNSName"]},
-          "EvaluateTargetHealth" : true,
+          "EvaluateTargetHealth" : false,
           "HostedZoneId" : {"Fn::GetAtt": ["loadBalancerId", "CanonicalHostedZoneID"]}
-        },
-        "HostedZoneId" : {"Ref": "hostedZoneId"},
-        "Name" : "String",
-        "TTL" : "1800",
-        "Type" : "A"
+        }
       }
-    },    
+    },
     "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
