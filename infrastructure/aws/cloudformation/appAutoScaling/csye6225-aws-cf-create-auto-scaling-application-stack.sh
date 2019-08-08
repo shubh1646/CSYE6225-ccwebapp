@@ -58,10 +58,12 @@ then
     echo "Failure: could not get Hosted Zones Corresponding to your domain"
     exit
 fi
+
 hostedZoneID=${hostedZone:12:${#hostedZone}}
+echo "$hostedZoneID"
 
 status=$(aws cloudformation create-stack --stack-name $applicationStackName \
---template-body file://csye6225-cf-application.json \
+--template-body file://csye6225-cf-auto-scaling-application.json \
 --parameters \
 ParameterKey=NetworkStackName,ParameterValue=$NetworkStackName \
 ParameterKey=amiId,ParameterValue=$amiId \
