@@ -716,7 +716,7 @@
       "DependsOn": "MyWebACL",
       "Properties": {
         "ResourceArn": {
-          "Fn::ImportValue": "loadBalancerArn"
+          "Ref": "loadBalancerId"
         },
         "WebACLId": {
           "Ref": "MyWebACL"
