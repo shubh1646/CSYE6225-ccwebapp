@@ -66,6 +66,30 @@
         "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
       }
     },
+   
+  
+    "LoadBalancerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "csye6225-WebappSecuritygroup",
+        "GroupDescription": "Security Group for web server",
+        "VpcId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}},
+        "SecurityGroupIngress": [
+         
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          }
+          
+        ]
+      }
+    },
+
+
+
+
     "WebappSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -75,27 +99,11 @@
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
-            "FromPort": "22",
-            "ToPort": "22",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "80",
-            "ToPort": "80",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "443",
-            "ToPort": "443",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
             "FromPort": "8080",
             "ToPort": "8080",
-            "CidrIp": "0.0.0.0/0"
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [ "WebappSecurityGroup", "GroupId" ]
+            }
           }
         ]
       }
@@ -141,6 +149,9 @@
         ]
       }
     },
+
+
+   
     "rdsInstanceId": {
       "Type": "AWS::RDS::DBInstance",
       "DeletionPolicy": "Delete",
@@ -166,80 +177,8 @@
         "Port": "3306"
       }
     },
-    "ec2InstanceProfileId": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Roles": [
-          { "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }
-        ],
-        "InstanceProfileName": "ec2InstanceProfile"
-      }
-    },
-    "ec2InstanceId": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "DisableApiTermination": false,
-        "ImageId": { "Ref": "amiId" },
-        "InstanceType": "t2.micro",
-        "KeyName": "csye6225",
-        "IamInstanceProfile": {
-          "Ref": "ec2InstanceProfileId"
-        },
-        "NetworkInterfaces": [
-          {
-            "AssociatePublicIpAddress": true,
-            "SubnetId": { "Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-subnet1Id"} },
-            "DeviceIndex": "0",
-            "GroupSet": [ {"Ref": "WebappSecurityGroup"} ]
-          }
-        ],
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/sda1",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "DeleteOnTermination": true,
-              "VolumeSize": "20"
-            }
-          }
-        ],
-        "UserData" : {
 
-          "Fn::Base64" : {
-            "Fn::Join" : [ "", [
-              "#!/bin/bash\n",
-              "sudo systemctl stop tomcat\n",
-              "echo \"#!/bin/sh\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"\nJAVA_OPTS=\\$JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"if [ -z \\\"\\$JAVA_OPTS\\\" ]\nthen\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"\tJAVA_OPTS=\\\"-DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"else\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"\tJAVA_OPTS=\\\"\\${JAVA_OPTS} -DactivatedProperties=prod\\\"\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"fi\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"JAVA_OPTS=\\\"\\${JAVA_OPTS} -Ddomain=",{"Fn::GetAtt": ["rdsInstanceId", "Endpoint.Address"]},
-              " -Ddatabase=csye6225 -DsqlUsername=csye6225master -DsqlPassword=csye6225password",
-              " -Dbucket=", { "Ref" : "s3BucketId" },
-              "\"\\\" >> /opt/tomcat/bin/setenv.sh\n",
-              "echo \"export JAVA_OPTS\" >> /opt/tomcat/bin/setenv.sh\n",
-              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s",
-              "sudo chmod +x /opt/tomcat/bin/setenv.sh\n",
-              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/amazon-cloudwatch-agent.json\n",
-              "sudo systemctl start tomcat"
-            ] ]
-          }
-        },
-        "Tags" : [
-          {
-            "Key" : "Name",
-            "Value" : { "Fn::Sub": "${AWS::StackName}-WebServer" }
-          },
-          {
-            "Key" : "Application Role",
-            "Value" : "Web Server"
-          }
-        ]
-      }
-    },
+
     "dynamoDBId": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
@@ -265,8 +204,82 @@
           "Enabled" : true
         }        
       }
+    },
+    
+    "myCertification":{
+      "Type" : "AWS::CertificateManager::Certificate",
+      "Properties" : {
+          "DomainName" : {"Fn::Sub" : "${domainName}"},
+
+          "ValidationMethod" : "DNS"
+        }
+    },
+    
+    "myLoadBalancer":{
+      "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties" : {
+          "Certificates" : {"Ref" : "myCertification"},
+          "DefaultActions" : [{
+            "Type" : "forward",
+            "TargetGroupArn" : { "Ref" : "ALBTargetGroup" }
+          }],
+          "LoadBalancerArn" : {"Ref" :  "AlicationLoadBalancer"},
+          "Port" : 80,
+          "Protocol" : "HTTP"
+        }
+    },
+
+    "AlicationLoadBalancer":{
+      "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties" : {
+          "IpAddressType" : "ipv4",
+          "Name" : "appLoadBalancer",
+          "Scheme" : "internet-facing",
+          "SecurityGroups" : [{"Ref": "LoadBalancerSecurityGroup"} ],
+          "Subnets" : [  {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${NetworkStackName}-subnet1Id"
+            }
+          },
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${NetworkStackName}-subnet2Id"
+            }
+          }],
+          "Type" : "application"
+        }
     }
+    
+    
   },
+  "loadBalancerTargetGroupId":{
+    "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+    "Properties" : {
+      
+        
+    
+        "Name" : "EC2TargetGroup",
+        "Port" : 8080,
+        "Protocol" : "HTTP",
+        "Tags" : [
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Sub": "${AWS::StackName}-LoadBalancerTargetGroup" }
+          }
+        ],
+        
+        "TargetType" : "instance",
+        "VpcId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-vpcId"}},
+      }
+  }
+  ,
+
+
+
+
+
+
+
   "Outputs": {
     "dynamoDBTable": {
       "Description": "DynamoDB Table Name",
