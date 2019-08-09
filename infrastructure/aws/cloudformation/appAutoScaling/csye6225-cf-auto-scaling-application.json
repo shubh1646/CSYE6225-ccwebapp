@@ -434,6 +434,14 @@
       "Export": {
         "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBArn" }
       }
+    },
+
+    "loadBalancerArn": {
+      "Description": "Load Balancer Arn",
+      "Value": {"Ref": "loadBalancerId"},
+      "Export": {
+        "Name": "loadBalancerArn"
+      }
     }
   }
 }
