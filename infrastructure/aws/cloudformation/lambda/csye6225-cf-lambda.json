@@ -48,9 +48,9 @@
         "FunctionName": "csye6225",
         "Code": {
           "S3Bucket": { "Fn::Sub": "code-deploy.${domainName}" },
-          "S3Key": "index.zip"
+          "S3Key": "email-1.0-SNAPSHOT.jar"
         },
-        "Handler": "index.handler",
+        "Handler": "EmailEvent::handleRequest",
         "Environment": {
           "Variables": {
             "domain": {"Ref": "domainName"},
@@ -58,7 +58,7 @@
           }
         },      
         "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
-        "Runtime": "nodejs10.x",
+        "Runtime": "java8",
         "MemorySize" : 256,
         "Timeout": 180,
         "ReservedConcurrentExecutions": 5,

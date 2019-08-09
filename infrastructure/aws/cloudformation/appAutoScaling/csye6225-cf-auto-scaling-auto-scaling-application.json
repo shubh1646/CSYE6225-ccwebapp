@@ -427,12 +427,18 @@
         "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBTable" }
       }
     },
-    
     "dynamoDBArn": {
       "Description": "DynamoDB Table Arn",
       "Value": {"Fn::GetAtt": ["dynamoDBId", "Arn"]},
       "Export": {
         "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBArn" }
+      }
+    },
+    "loadBalancerArn": {
+      "Description": "Application Load Balancer Arn",
+      "Value": {"Ref": "loadBalancerId"},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-LoadBalancerArn" }
       }
     }
   }
