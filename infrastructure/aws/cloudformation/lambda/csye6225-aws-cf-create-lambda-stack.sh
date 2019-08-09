@@ -45,7 +45,7 @@ status=$(aws cloudformation create-stack --stack-name $lambdaStackName \
 ParameterKey=CircleCIStackName,ParameterValue=$circleCIStackName \
 ParameterKey=ApplicationStackName,ParameterValue=$applicationStackName \
 ParameterKey=domainName,ParameterValue=$domainName \
---capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
+--capabilities CAPABILITY_NAMED_IAM)
 
 if [ $? -eq 0 ]
 then

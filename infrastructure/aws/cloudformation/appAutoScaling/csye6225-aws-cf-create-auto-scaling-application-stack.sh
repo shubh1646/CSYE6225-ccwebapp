@@ -58,6 +58,7 @@ then
     echo "Failure: could not get Hosted Zones Corresponding to your domain"
     exit
 fi
+
 hostedZoneID=${hostedZone:12}
 echo $hostedZoneID
 
