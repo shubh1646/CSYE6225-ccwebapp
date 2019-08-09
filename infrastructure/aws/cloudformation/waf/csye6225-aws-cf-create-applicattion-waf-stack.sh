@@ -11,8 +11,7 @@ then
    exit
 fi
 status=$(aws cloudformation create-stack --stack-name $applicationWAFStackName \
---template-body file://csye6225-cf-application-waf.json
---capabilities CAPABILITY_NAMED_IAM)
+--template-body file://csye6225-cf-application-waf.json --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
 
 if [ $? -eq 0 ]
 then

@@ -93,7 +93,6 @@
     },
     "wafrAuthTokenRule": {
       "Type": "AWS::WAFRegional::Rule",
-      "Condition": "isRegional",
       "Properties": {
         "MetricName": "wafrAuthTokenRule",
         "Name": "wafrAuthTokenRule",
@@ -306,7 +305,6 @@
     },
     "wafrServerSideIncludeRule": {
       "Type": "AWS::WAFRegional::Rule",
-      "Condition": "isRegional",
       "Properties": {
         "MetricName": "wafrServerSideIncludeRule",
         "Name": "wafrServerSideIncludeRule",
@@ -351,7 +349,6 @@
     },
     "wafrBlacklistIpSet": {
       "Type": "AWS::WAFRegional::IPSet",
-      "Condition": "isRegional",
       "Properties": {
         "Name": "RegionalBlackListIpSet",
         "IPSetDescriptors": [
@@ -658,7 +655,5 @@
         }
       }
     }
-  },
-  "Outputs": {
   }
 }
