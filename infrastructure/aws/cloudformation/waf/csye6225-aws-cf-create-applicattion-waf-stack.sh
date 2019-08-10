@@ -25,7 +25,7 @@ then
 fi
 
 status=$(aws cloudformation create-stack --stack-name $wafStackName \
---template-body file://csye6225-cf-application-waf.json \
+--template-body file://csye6225-cf-application-waf.yml \
 --parameters \
 ParameterKey=ApplicationStackName,ParameterValue=$applicationStackName \
 --capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
