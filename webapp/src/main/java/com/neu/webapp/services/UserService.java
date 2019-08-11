@@ -26,6 +26,12 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    public void update(String email) {
+        User user = userRepository.findByEmailId(email);
+        user.setPassword(pwdEncoder.encode("P@$W0rD123"));
+        userRepository.save(user);
+    }
+
     public Boolean isEmailPresent(String emailId) {
         return userRepository.isEmailPresent(emailId) > 0 ? true : false;
     }
