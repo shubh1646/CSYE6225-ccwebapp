@@ -10,10 +10,8 @@ import com.timgroup.statsd.StatsDClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import org.springframework.http.HttpStatus;
-import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +23,6 @@ import com.amazonaws.services.sns.AmazonSNS;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -38,10 +35,6 @@ public class UserRestController {
     
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private StatsDClient statsDClient;
-
 
     @Autowired
     private UserValidator userValidator;
@@ -77,8 +70,9 @@ public class UserRestController {
 
 
     }
+
     @PostMapping("/reset")
-    public ResponseEntity<String> PasswordReset(@RequestBody User user) throws Exception{
+    public ResponseEntity<String> passwordReset(@RequestBody User user) throws Exception{
         metricsClient.incrementCounter("endpoint./.http.reset");
 
 
@@ -101,7 +95,14 @@ public class UserRestController {
 
     }
 
-
+    @GetMapping("/reset")
+    public ResponseEntity<String> newPasswordReset(@RequestParam String email, @RequestParam String token) throws Exception{
+        metricsClient.incrementCounter("endpoint./reset.http.get");
+        if(email==null || token==null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"token not found\"}");
+        userService.update(email);
+        return ResponseEntity.status(HttpStatus.OK).body("{\"newPassword\": \"P@$W0rD123\"}");
     }
+
+}
 
 

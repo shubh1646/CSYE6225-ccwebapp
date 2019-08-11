@@ -1,0 +1,459 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS WAF Basic OWASP Example Rule Set
+
+## ::PARAMETERS::
+## Template parameters to be configured by user
+Parameters:
+  ApplicationStackName:
+    Type: String
+    Description: Name of the Application Stack
+
+## ::RESOURCES::
+## Resources used in this solution
+Resources:
+
+## 1.
+## OWASP Top 10 A1
+## Mitigate SQL Injection Attacks
+## Matches attempted SQLi patterns in the URI, QUERY_STRING, BODY, COOKIES
+  wafrSQLiSet:
+    Type: AWS::WAFRegional::SqlInjectionMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-detect-sqli'
+      SqlInjectionMatchTuples:
+        - FieldToMatch:
+            Type: URI
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: URI
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: BODY
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: BODY
+          TextTransformation: HTML_ENTITY_DECODE
+  
+  wafrSQLiRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'mitigatesqli'
+      Name: !Sub '${AWS::StackName}-mitigate-sqli'
+      Predicates:
+        - Type: SqlInjectionMatch
+          Negated: false
+          DataId: !Ref wafrSQLiSet
+
+## 2.
+## OWASP Top 10 A2
+## Blacklist bad/hijacked JWT tokens or session IDs
+## Matches the specific values in the cookie or Authorization header
+## for JWT it is sufficient to check the signature
+  wafrAuthTokenStringSet:
+    Type: AWS::WAFRegional::ByteMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-auth-tokens'
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: HEADER
+            Data: cookie
+          PositionalConstraint: CONTAINS
+          TargetString: example-session-id
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: HEADER
+            Data: authorization
+          PositionalConstraint: ENDS_WITH
+          TargetString: .TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+          TextTransformation: URL_DECODE
+
+  wafrAuthTokenRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'badauthtokens'
+      Name: !Sub '${AWS::StackName}-detect-bad-auth-tokens'
+      Predicates:
+        - Type: ByteMatch
+          Negated: false
+          DataId: !Ref wafrAuthTokenStringSet
+
+
+## 3.
+## OWASP Top 10 A3
+## Mitigate Cross Site Scripting Attacks
+## Matches attempted XSS patterns in the URI, QUERY_STRING, BODY, COOKIES
+  wafrXSSSet:
+    Type: AWS::WAFRegional::XssMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-detect-xss'
+      XssMatchTuples:
+        - FieldToMatch:
+            Type: URI
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: URI
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: BODY
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: BODY
+          TextTransformation: HTML_ENTITY_DECODE
+        # - FieldToMatch:
+        #     Type: HEADER
+        #     Data: cookie
+        #   TextTransformation: URL_DECODE
+        # - FieldToMatch:
+        #     Type: HEADER
+        #     Data: cookie
+        #   TextTransformation: HTML_ENTITY_DECODE
+          
+  wafrXSSRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'mitigatexss'
+      Name: !Sub '${AWS::StackName}-mitigate-xss'
+      Predicates:
+        - Type: XssMatch
+          Negated: false
+          DataId: !Ref wafrXSSSet
+
+# 4.
+# OWASP Top 10 A4
+# Path Traversal, LFI, RFI
+# Matches request patterns designed to traverse filesystem paths, and include
+# local or remote files
+  wafrPathsStringSet:
+    Type: AWS::WAFRegional::ByteMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-rfi-lfi-traversal'
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: CONTAINS
+          TargetString: ../
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: CONTAINS
+          TargetString: ../
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          PositionalConstraint: CONTAINS
+          TargetString: ../
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          PositionalConstraint: CONTAINS
+          TargetString: ../
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: CONTAINS
+          TargetString: ://
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: CONTAINS
+          TargetString: ://
+          TextTransformation: HTML_ENTITY_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          PositionalConstraint: CONTAINS
+          TargetString: ://
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: QUERY_STRING
+          PositionalConstraint: CONTAINS
+          TargetString: ://
+          TextTransformation: HTML_ENTITY_DECODE
+
+  wafrPathsRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'detectrfilfi'
+      Name: !Sub '${AWS::StackName}-detect-rfi-lfi-traversal'
+      Predicates:
+        - Type: ByteMatch
+          Negated: false
+          DataId: !Ref wafrPathsStringSet
+
+
+## 5.
+## OWASP Top 10 A4
+## Privileged Module Access Restrictions
+## Restrict access to the admin interface to known source IPs only
+## Matches the URI prefix, when the remote IP isn't in the whitelist
+  wafrAdminUrlStringSet:
+    Type: AWS::WAFRegional::ByteMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-admin-url'
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: STARTS_WITH
+          TargetString: /admin
+          TextTransformation: URL_DECODE
+
+  wafrAdminRemoteAddrIpSet:
+    Type: AWS::WAFRegional::IPSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-admin-remote-ip'
+      IPSetDescriptors:
+        - Type: IPV4
+          Value: 127.0.0.1/32
+
+  wafrAdminAccessRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'detectadminaccess'
+      Name: !Sub '${AWS::StackName}-detect-admin-access'
+      Predicates:
+        - Type: ByteMatch
+          Negated: false
+          DataId: !Ref wafrAdminUrlStringSet
+        - Type: IPMatch
+          Negated: true
+          DataId: !Ref wafrAdminRemoteAddrIpSet
+
+## 6.
+## OWASP Top 10 A7
+## Mitigate abnormal requests via size restrictions
+## Enforce consistent request hygene, limit size of key elements
+  wafrSizeRestrictionSet:
+    Type: AWS::WAFRegional::SizeConstraintSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-size-restrictions'
+      SizeConstraints:
+        - FieldToMatch:
+            Type: URI
+          TextTransformation: NONE
+          ComparisonOperator: GT
+          Size: 512
+        - FieldToMatch:
+            Type: QUERY_STRING
+          TextTransformation: NONE
+          ComparisonOperator: GT
+          Size: 1024
+        - FieldToMatch:
+            Type: BODY
+          TextTransformation: NONE
+          ComparisonOperator: GT
+          Size: 1048575
+        - FieldToMatch:
+            Type: HEADER
+            Data: cookie
+          TextTransformation: NONE
+          ComparisonOperator: GT
+          Size: 4096
+
+  wafrSizeRestrictionRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'restrictsizes'
+      Name: !Sub '${AWS::StackName}-restrict-sizes'
+      Predicates:
+        - Type: SizeConstraint
+          Negated: false
+          DataId: !Ref wafrSizeRestrictionSet
+
+## 7.
+## OWASP Top 10 A8
+## CSRF token enforcement example
+## Enforce the presence of CSRF token in request header
+  wafrCSRFMethodStringSet:
+    Type: AWS::WAFRegional::ByteMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-csrf-method'
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: METHOD
+          PositionalConstraint: EXACTLY
+          TargetString: post
+          TextTransformation: LOWERCASE
+  wafrCSRFTokenSizeConstraint:
+    Type: AWS::WAFRegional::SizeConstraintSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-csrf-token'
+      SizeConstraints:
+        - FieldToMatch:
+            Type: HEADER
+            Data: x-csrf-token
+          TextTransformation: NONE
+          ComparisonOperator: EQ
+          Size: 36
+
+  wafrCSRFRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'enforcecsrf'
+      Name: !Sub '${AWS::StackName}-enforce-csrf'
+      Predicates:
+        - Type: ByteMatch
+          Negated: false
+          DataId: !Ref wafrCSRFMethodStringSet
+        - Type: SizeConstraint
+          Negated: true
+          DataId: !Ref wafrCSRFTokenSizeConstraint
+
+## 8.csye6225-cf-waf
+## OWASP Top 10 A9
+## Server-side includes & libraries in webroot
+## Matches request patterns for webroot objects that shouldn't be directly accessible
+  wafrServerSideIncludeStringSet:
+    Type: AWS::WAFRegional::ByteMatchSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-ssi'
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: STARTS_WITH
+          TargetString: /includes
+          TextTransformation: URL_DECODE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .cfg
+          TextTransformation: LOWERCASE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .conf
+          TextTransformation: LOWERCASE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .config
+          TextTransformation: LOWERCASE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .ini
+          TextTransformation: LOWERCASE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .log
+          TextTransformation: LOWERCASE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .bak
+          TextTransformation: LOWERCASE
+        - FieldToMatch:
+            Type: URI
+          PositionalConstraint: ENDS_WITH
+          TargetString: .backup
+          TextTransformation: LOWERCASE
+  
+  wafrServerSideIncludeRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'detectssi'
+      Name: !Sub '${AWS::StackName}-detect-ssi'
+      Predicates:
+        - Type: ByteMatch
+          Negated: false
+          DataId: !Ref wafrServerSideIncludeStringSet
+
+## 9.
+## Generic
+## IP Blacklist
+## Matches IP addresses that should not be allowed to access content
+  wafrBlacklistIpSet:
+    Type: AWS::WAFRegional::IPSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-match-blacklisted-ips'
+      IPSetDescriptors:
+        - Type: IPV4
+          Value: 192.168.1.1/32
+        - Type: IPV4
+          Value: 192.168.1.1/32
+        - Type: IPV4
+          Value: 169.254.0.0/16
+        - Type: IPV4
+          Value: 172.16.0.0/16
+        - Type: IPV4
+          Value: 127.0.0.1/32
+        - Type: IPV4
+          Value: 10.110.123.223/32
+ 
+  wafrBlacklistIpRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: 'blacklistedips'
+      Name: !Sub '${AWS::StackName}-detect-blacklisted-ips'
+      Predicates:
+        - Type: IPMatch
+          Negated: false
+          DataId: !Ref wafrBlacklistIpSet
+
+## --
+## WebACL containing the above rules evaluated in-order
+  wafrOwaspACL:
+    Type: AWS::WAFRegional::WebACL
+    Properties:
+      MetricName: 'owaspacl'
+      Name: !Sub '${AWS::StackName}-owasp-acl'
+      DefaultAction:
+        Type: ALLOW
+      Rules:
+        - Action:
+            Type: BLOCK
+          Priority: 10
+          RuleId: !Ref wafrSizeRestrictionRule
+        - Action:
+            Type: BLOCK
+          Priority: 20
+          RuleId: !Ref wafrBlacklistIpRule
+        - Action:
+            Type: BLOCK
+          Priority: 30
+          RuleId: !Ref wafrAuthTokenRule
+        - Action:
+            Type: BLOCK
+          Priority: 40
+          RuleId: !Ref wafrSQLiRule
+        - Action:
+            Type: BLOCK
+          Priority: 50
+          RuleId: !Ref wafrXSSRule
+        - Action:
+            Type: BLOCK
+          Priority: 60
+          RuleId: !Ref wafrPathsRule
+        - Action:
+            Type: ALLOW
+          Priority: 70
+          RuleId: !Ref wafrCSRFRule
+        - Action:
+            Type: BLOCK
+          Priority: 80
+          RuleId: !Ref wafrServerSideIncludeRule
+        - Action:
+            Type: BLOCK
+          Priority: 90
+          RuleId: !Ref wafrAdminAccessRule
+
+  MyWebACLAssociation:
+    Type: AWS::WAFRegional::WebACLAssociation
+    DependsOn: wafrOwaspACL
+    Properties:
+      # ResourceArn: !Ref LOADBALANCER
+      WebACLId: !Ref wafrOwaspACL
+      ResourceArn:
+        Fn::ImportValue:
+          !Sub '${ApplicationStackName}-LoadBalancerArn'

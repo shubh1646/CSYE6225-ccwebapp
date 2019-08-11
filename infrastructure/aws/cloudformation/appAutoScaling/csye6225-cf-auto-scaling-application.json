@@ -417,6 +417,62 @@
           "Enabled" : true
         }        
       }
+    },
+    "codeDeployEC2ServiceRoleId": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [ {
+            "Sid": "codeDeployEC2ServiceRole",
+            "Effect": "Allow",
+            "Principal": { "Service": "codedeploy.amazonaws.com" },
+            "Action": ["sts:AssumeRole"]
+          } ]
+        },
+        "Path": "/",
+        "RoleName": "CodeDeployEC2ServiceRole",
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole" ],
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Fn::Sub": "${AWS::StackName}-CodeDeployEC2ServiceRole" }
+        } ]
+      }
+    },
+    "ec2ApplicationId": {
+      "Type" : "AWS::CodeDeploy::Application",
+      "Properties" : {
+        "ApplicationName" : "csye6225-webapp",
+        "ComputePlatform" : "Server"
+      }
+    },
+    "ec2DeploymentGroupId" : {
+      "Type" : "AWS::CodeDeploy::DeploymentGroup",
+      "Properties" : {
+        "ApplicationName" : {"Ref" : "ec2ApplicationId"},
+        "DeploymentGroupName": "csye6225-webapp-deployment",
+        "AutoScalingGroups": [ {"Ref": "autoScalingGroupId"} ],
+        "ServiceRoleArn" : { "Fn::GetAtt" : [ "codeDeployEC2ServiceRoleId", "Arn" ] },
+        "DeploymentStyle": {
+          "DeploymentType": "IN_PLACE",
+          "DeploymentOption": "WITHOUT_TRAFFIC_CONTROL"
+        },
+        "Ec2TagFilters": [
+          {
+            "Key": "Application Role",
+            "Value": "Web Server",
+            "Type": "KEY_AND_VALUE"
+          }
+        ],
+        "DeploymentConfigName": "CodeDeployDefault.AllAtOnce",
+        "AutoRollbackConfiguration": {
+          "Enabled": "True",
+          "Events": [
+            "DEPLOYMENT_FAILURE",
+            "DEPLOYMENT_STOP_ON_ALARM",
+            "DEPLOYMENT_STOP_ON_REQUEST"
+          ]
+        }
+      }
     }
   },
   "Outputs": {
@@ -427,12 +483,18 @@
         "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBTable" }
       }
     },
-    
     "dynamoDBArn": {
       "Description": "DynamoDB Table Arn",
       "Value": {"Fn::GetAtt": ["dynamoDBId", "Arn"]},
       "Export": {
         "Name": { "Fn::Sub": "${AWS::StackName}-dynamoDBArn" }
+      }
+    },
+    "loadBalancerArn": {
+      "Description": "Application Load Balancer Arn",
+      "Value": {"Ref": "loadBalancerId"},
+      "Export": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-LoadBalancerArn" }
       }
     }
   }

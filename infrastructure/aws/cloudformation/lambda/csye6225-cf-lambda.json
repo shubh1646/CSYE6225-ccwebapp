@@ -33,7 +33,7 @@
         },
         "Path": "/",
         "RoleName": "LambdaExecutionRole",
-        "ManagedPolicyArns": [ 
+        "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         ],
         "Tags" : [ {
@@ -56,7 +56,7 @@
             "domain": {"Ref": "domainName"},
             "table": { "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBTable"} }
           }
-        },      
+        },
         "Role": {"Fn::GetAtt": ["lambdaExecutionRoleId", "Arn"]},
         "Runtime": "nodejs10.x",
         "MemorySize" : 256,
@@ -78,12 +78,12 @@
       "Type" : "AWS::SNS::Topic",
       "DependsOn": "lambdaFunctionId",
       "Properties" : {
-          "Subscription" : [{
-              "Endpoint" : { "Fn::GetAtt": [ "lambdaFunctionId", "Arn" ] },
-              "Protocol" : "lambda"            
-          } ],
-          "TopicName" : "email"
-        }
+        "Subscription" : [{
+          "Endpoint" : { "Fn::GetAtt": [ "lambdaFunctionId", "Arn" ] },
+          "Protocol" : "lambda"
+        } ],
+        "TopicName" : "email"
+      }
     },
     "lambdaPermission": {
       "Type": "AWS::Lambda::Permission",
@@ -99,62 +99,62 @@
       "Type" : "AWS::IAM::ManagedPolicy",
       "DependsOn": "topicId",
       "Properties" : {
-          "ManagedPolicyName" : "lambdaPolicy",
-          "PolicyDocument" :  {
-            "Version" : "2012-10-17",
-            "Statement" : [
-              {
-                "Sid" : "LambdaDynamoDBAccess",
-                "Effect" : "Allow",
-                "Action" : ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
-                "Resource" : {
-                  "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBArn"}
-                }
-              },
-              {
-                "Sid" : "LambdaSESAccess",
-                "Effect": "Allow",
-                "Action": [
-                  "ses:VerifyEmailAddress",
-                  "ses:SendEmail",
-                  "ses:SendRawEmail"
-                ],
-                "Resource": {"Fn::Sub": "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"}
-              },
-              {
-                "Sid" : "LambdaS3Access",
-                "Effect": "Allow",
-                "Action": [ "s3:GetObject"],
-                "Resource": { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" }
-              },
-              {
-                "Sid" : "LambdaSNSAccess",
-                "Effect": "Allow",
-                "Action": [ "sns:ConfirmSubscription"],
-                "Resource": {"Ref": "topicId"}
+        "ManagedPolicyName" : "lambdaPolicy",
+        "PolicyDocument" :  {
+          "Version" : "2012-10-17",
+          "Statement" : [
+            {
+              "Sid" : "LambdaDynamoDBAccess",
+              "Effect" : "Allow",
+              "Action" : ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
+              "Resource" : {
+                "Fn::ImportValue": {"Fn::Sub": "${ApplicationStackName}-dynamoDBArn"}
               }
-            ]
-          },
-          "Roles": [{"Ref": "lambdaExecutionRoleId"}]
+            },
+            {
+              "Sid" : "LambdaSESAccess",
+              "Effect": "Allow",
+              "Action": [
+                "ses:VerifyEmailAddress",
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+              ],
+              "Resource": {"Fn::Sub": "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"}
+            },
+            {
+              "Sid" : "LambdaS3Access",
+              "Effect": "Allow",
+              "Action": [ "s3:GetObject"],
+              "Resource": { "Fn::Sub": "arn:aws:s3:::code-deploy.${domainName}/*" }
+            },
+            {
+              "Sid" : "LambdaSNSAccess",
+              "Effect": "Allow",
+              "Action": [ "sns:ConfirmSubscription"],
+              "Resource": {"Ref": "topicId"}
+            }
+          ]
+        },
+        "Roles": [{"Ref": "lambdaExecutionRoleId"}]
       }
     },
     "topicPolicy" : {
       "Type" : "AWS::IAM::ManagedPolicy",
       "DependsOn": "topicId",
       "Properties" : {
-          "ManagedPolicyName" : "EC2TopicAccessPolicy",
-          "PolicyDocument" :  {
-            "Version" : "2012-10-17",
-            "Statement" : [
-              {
-                "Sid" : "AllowEC2ToPublishToSNSTopic",
-                "Effect" : "Allow",
-                "Action" : [ "sns:Publish", "sns:CreateTopic"],
-                "Resource" : {"Ref": "topicId"}
-              } 
-            ]
-          },
-          "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
+        "ManagedPolicyName" : "EC2TopicAccessPolicy",
+        "PolicyDocument" :  {
+          "Version" : "2012-10-17",
+          "Statement" : [
+            {
+              "Sid" : "AllowEC2ToPublishToSNSTopic",
+              "Effect" : "Allow",
+              "Action" : [ "sns:Publish", "sns:CreateTopic"],
+              "Resource" : {"Ref": "topicId"}
+            }
+          ]
+        },
+        "Roles": [{ "Fn::ImportValue": {"Fn::Sub": "${CircleCIStackName}-ec2ExecutionRoleId"} }]
       }
     }
   },
