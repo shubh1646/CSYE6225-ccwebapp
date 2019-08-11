@@ -25,10 +25,10 @@ then
 fi
 
 status=$(aws cloudformation create-stack --stack-name $wafStackName \
---template-body file://csye6225-cf-application-waf.yml \
+--template-body file://csye6225-cf-application-waf-temp.yml \
 --parameters \
 ParameterKey=ApplicationStackName,ParameterValue=$applicationStackName \
---capabilities CAPABILITY_NAMED_IAM --on-failure DELETE)
+--capabilities CAPABILITY_NAMED_IAM)
 
 if [ $? -eq 0 ]
 then
