@@ -80,10 +80,10 @@
         ]
       }
     },
-    "wafrAuthTokenStringSet": {
+    "wafrauthTokenStringSet": {
       "Type": "AWS::WAFRegional::ByteMatchSet",
       "Properties": {
-        "Name": "RegionalAuthTokenByteMatchSet",
+        "Name": "Regional Byte MatchSet",
         "ByteMatchTuples": [
           {
             "FieldToMatch": {
@@ -91,22 +91,22 @@
               "Data": "cookie"
             },
             "PositionalConstraint": "CONTAINS",
-            "TargetString": "csye6225-su19",
+            "TargetString": "csye6225-su2019",
             "TextTransformation": "NONE"
           }
         ]
       }
     },
-    "wafrAuthTokenRule": {
+    "wafrauthTokenRule": {
       "Type": "AWS::WAFRegional::Rule",
       "Properties": {
-        "MetricName": "wafrAuthTokenRule",
-        "Name": "wafrAuthTokenRule",
+        "MetricName": "wafrauthTokenRule",
+        "Name": "wafrauthTokenRule",
         "Predicates": [
           {
             "Type": "ByteMatch",
             "Negated": false,
-            "DataId": { "Ref": "wafrAuthTokenStringSet" }
+            "DataId": {"Ref":"wafrauthTokenStringSet"}
           }
         ]
       }
@@ -197,20 +197,30 @@
             "TextTransformation": "NONE"
           },
           {
-            "ComparisonOperator": "GE",
+            "ComparisonOperator": "GT",
             "FieldToMatch": {
               "Type": "BODY"
             },
-            "Size": "204800",
+            "Size": "10000000",
             "TextTransformation": "NONE"
           },
           {
-            "ComparisonOperator": "GE",
+            "ComparisonOperator": "GT",
             "FieldToMatch": {
               "Type": "QUERY_STRING"
             },
             "Size": "1024",
             "TextTransformation": "NONE"
+          },
+          {
+            "FieldToMatch": {
+              "Type" : "HEADER",
+              "Data": "cookie"
+            },
+            "TextTransformation": "NONE",
+            "ComparisonOperator": "GT",
+            "Size":"4096"
+
           }
         ]
       }
@@ -391,27 +401,6 @@
             "Type": "IPMatch",
             "Negated": false,
             "DataId": {"Ref" : "wafrBlacklistIpSet"}
-          }
-        ]
-      }
-    },
-    "wafrScanProbesSet": {
-      "Type": "AWS::WAFRegional::IPSet",
-      "Properties": {
-        "Name": "wafrScanProbesSet"
-      }
-    },
-    "wafrScansProbesRule": {
-      "Type": "AWS::WAFRegional::Rule",
-      "DependsOn": "wafrScanProbesSet",
-      "Properties": {
-        "Name": "wafrScansProbesRule",
-        "MetricName": "wafrScansProbesRule",
-        "Predicates": [
-          {
-            "DataId": {"Ref": "wafrScanProbesSet"},
-            "Negated": false,
-            "Type": "IPMatch"
           }
         ]
       }
@@ -644,7 +633,7 @@
               "Type": "BLOCK"
             },
             "Priority": 10,
-            "RuleId": {"Ref":"wafrScansProbesRule"}
+            "RuleId": {"Ref":"wafrauthTokenRule"}
           }
         ]
       }
