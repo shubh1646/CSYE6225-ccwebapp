@@ -134,12 +134,12 @@
         "SubnetIds": [
           {
             "Fn::ImportValue": {
-              "Fn::Sub": "${NetworkStackName}-subnet2Id"
+              "Fn::Sub": "${NetworkStackName}-subnet1Id"
             }
           },
           {
             "Fn::ImportValue": {
-              "Fn::Sub": "${NetworkStackName}-subnet3Id"
+              "Fn::Sub": "${NetworkStackName}-subnet2Id"
             }
           }
         ]
@@ -240,8 +240,8 @@
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
         "LaunchConfigurationName" : "asg_launch_config",
-        "InstanceType" : "t2.micro",
         "PlacementTenancy" : "default",
+        "InstanceType" : "t2.micro",
         "AssociatePublicIpAddress" : true,
         "IamInstanceProfile" : {"Ref": "ec2InstanceProfileId"},
         "ImageId" : {"Ref": "amiId"},
