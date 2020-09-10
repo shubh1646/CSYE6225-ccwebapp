@@ -30,14 +30,14 @@ boot and deployed on AWS
 
 Tools and Technologies
 ----------------------
-
                           
-  ---------------------- --------------------------------------------------------
-  Infrastructure         VPC, ELB, EC2, Route53, Cloud formation, Shell, Packer
-  Webapp                 Java, Spring Boot, MySQL, Maven
-  CI/CD                  Circle CI, AWS Code Deploy
-  Alerting and logging   statsd, Cloud Watch, SNS, SES, Lambda
-  Security               WAF
+| Infrastructure       | VPC, ELB, EC2, Route53, Cloud formation, Shell, Packer |
+|----------------------|--------------------------------------------------------|
+| Webapp               | Java, Spring Boot, MySQL, Maven                        |
+| CI/CD                | Circle CI, AWS Code Deploy                             |
+| Alerting and logging | statsd, Cloud Watch, SNS, SES, Lambda                  |
+| Security             | WAF                                                    |
+
 
 Infrastructure-setup
 --------------------
@@ -65,15 +65,15 @@ Webapp
 
 ## Build Instructions
 Pre-Requisites: Need to have postman installed
-1. Clone this repository  into the local system 
-2. Go to the folder csye6225/dev/ccwebapp/webapp
-3. Download all maven dependencies by going to File > Settings > Maven > Importing. 
-4. Run WebappApplication by going to csye6225/dev/ccwebapp/webapp/src/main/java/com/neu/webapp/WebappApplication.java
+-  Clone this repository  into the local system 
+-  Go to the folder csye6225/dev/ccwebapp/webapp
+-  Download all maven dependencies by going to File > Settings > Maven > Importing. 
+-  Run WebappApplication by going to csye6225/dev/ccwebapp/webapp/src/main/java/com/neu/webapp/WebappApplication.java
 
 
 ## Running Tests
-Used mockito and junit for test case.
-Run WebappApplication test cases: open the webapp aplication on your IDE -> right click on webapp -> Run 'All Tests'
+- Used mockito and junit for test case.
+- Run WebappApplication test cases: open the webapp aplication on your IDE -> right click on webapp -> Run 'All Tests'
 
 
 CI/CD
