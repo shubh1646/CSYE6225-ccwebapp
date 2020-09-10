@@ -81,7 +81,8 @@ CI/CD
 -   Bootstrapped the docker container in CircleCI to run the unit tests,
     integration tests and generate the artifact
 -   The artifact generated is stored S3 bucket and deployed to an
-    autoscaling group. ![alt text](ci-cd.png "CI/CD")
+    autoscaling group. ![ci-cd](https://user-images.githubusercontent.com/42703011/92802596-a7858700-f384-11ea-89db-85f0f8de8bc7.png)
+
 
 Auto scaling groups
 -------------------
@@ -100,7 +101,8 @@ Serverless computing
 -   The lambda function checks for the entry of the email in DynamoDB if
     it has no entry then it inserts a record with a TTL of 15 minutes
     and sends the notification to the user with SES ![alt
-    text](lambda.png "Serverless computing")
+    text]![lambda](https://user-images.githubusercontent.com/42703011/92802718-c126ce80-f384-11ea-843f-a06d1267bdd9.png)
+
 
 [Packer](https://packer.io/)
 ----------------------------
